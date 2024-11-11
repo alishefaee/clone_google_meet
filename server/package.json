@@ -18,11 +18,17 @@
   "devDependencies": {
     "@types/node": "^22.9.0",
     "socket.io-client": "^4.8.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.3",
     "vitest": "^2.1.4"
   },
   "dependencies": {
     "@types/express": "^5.0.0",
+    "copyfiles": "^2.4.1",
+    "cross-env": "^7.0.3",
+    "del-cli": "^6.0.0",
     "express": "^4.21.1",
+    "node-cache": "^5.1.2",
     "socket.io": "^4.8.1"
   }
 }

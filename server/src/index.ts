@@ -3,7 +3,7 @@ import { socketServer } from './init/socket'
 
 import { app } from './init/app'
 const server = http.createServer(app)
-const port = process.env.PORT || 4000
+const port = 4000
 const io = socketServer(server)
 
 server.listen(port)
