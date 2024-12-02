@@ -1,9 +1,11 @@
 import 'express-async-errors'
-import express, { Request, Response, NextFunction } from 'express'
+import express, { Request, Response, NextFunction, ErrorRequestHandler } from 'express'
 const app = express()
+
+// Error-handling middleware
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.log(err)
-  return res.send('Error')
+  console.error(err.stack)
+  res.status(500).send('Something broke!')
 })
 
 export { app }
