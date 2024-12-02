@@ -1,7 +1,8 @@
 {
   "files": [],
   "compilerOptions": {
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "esModuleInterop": true
   },
   "references": [
     { "path": "./tsconfig.app.json" },

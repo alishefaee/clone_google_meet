@@ -1,16 +1,14 @@
 import { Server, Socket } from 'socket.io'
+import Cache from '../cacheHelper'
 
 export function onConnection(io: Server) {
   return async (socket: Socket) => {
     console.log('client connected')
-    // socket.on('s:meeting:create', onCreateMeeting(io, socket))
-    // socket.on('s:meeting:join', onJoinMeeting(io, socket))
-    // socket.on('s:msg:new', onMessage(io, socket))
-
     socket.on('candidate', (candidate) => {
       console.log('Candidate received:', candidate)
       socket.broadcast.emit('candidate', candidate)
     })
+
     socket.on('offer', ({ offer, meetingId }) => {
       console.log('Offer received:', offer)
       socket.to(meetingId).emit('offer', { offer, meetingId })
@@ -21,11 +19,41 @@ export function onConnection(io: Server) {
       socket.to(meetingId).emit('answer', answer)
     })
 
-    socket.on('candidate', (candidate) => {
-      console.log('Candidate received:', candidate)
-      socket.broadcast.emit('candidate', candidate)
+    type TCreateMeeting = { id: string; aud: boolean; vid: boolean }
+    socket.on('create-meeting', ({ id, vid, aud }: TCreateMeeting, fn: Function) => {
+      const newMeeting = {
+        creator: socket.handshake.auth.username,
+        participants: [
+          {
+            username: socket.handshake.auth.username,
+            vid,
+            aud
+          }
+        ]
+      }
+
+      Cache.set(id, newMeeting)
+
+      socket.join(id)
+      fn({ status: 'SUCCESS', mgs: 'success', data: newMeeting })
     })
 
-    // socket.on('disconnect', onDisconnection(io, socket))
+    type TJoinMeeting = { id: string; aud: boolean; vid: boolean }
+    socket.on('create-meeting', ({ id, vid, aud }: TJoinMeeting, fn: Function) => {
+      const meeting = Cache.get(id)
+      meeting.participants.push({
+        username: socket.handshake.auth.username,
+        vid,
+        aud
+      })
+      Cache.set(id, meeting)
+
+      socket.join(id)
+      fn()
+    })
+
+    socket.on('disconnect', (data: any, fn: Function) => {
+      console.log('Client disconnected:', socket.id)
+    })
   }
 }
