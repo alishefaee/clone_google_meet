@@ -4,6 +4,7 @@ import { socketServer } from './init/socket'
 import { app } from './init/app'
 const server = http.createServer(app)
 const port = 4000
+console.log('Create IO')
 const io = socketServer(server)
 
 server.listen(port)

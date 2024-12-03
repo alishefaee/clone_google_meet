@@ -21,6 +21,7 @@ export function onConnection(io: Server) {
 
     type TCreateMeeting = { id: string; aud: boolean; vid: boolean }
     socket.on('create-meeting', ({ id, vid, aud }: TCreateMeeting, fn: Function) => {
+      console.log('create meeting')
       const newMeeting = {
         creator: socket.handshake.auth.username,
         participants: [
@@ -40,7 +41,8 @@ export function onConnection(io: Server) {
 
     type TJoinMeeting = { id: string; aud: boolean; vid: boolean }
     socket.on('create-meeting', ({ id, vid, aud }: TJoinMeeting, fn: Function) => {
-      const meeting = Cache.get(id)
+      console.log('create-meeting')
+      const meeting: any = Cache.get(id)
       meeting.participants.push({
         username: socket.handshake.auth.username,
         vid,
