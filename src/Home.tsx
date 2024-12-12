@@ -21,9 +21,7 @@ const Home = ({
   const camRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
-    console.log('1::')
     if (localStream && camRef.current) {
-      console.log('2::')
       camRef.current!.srcObject = localStream
     }
   }, [localStream])

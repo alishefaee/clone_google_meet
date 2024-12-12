@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { socket } from './socket.ts'
 import Home from './Home'
 import { TMeeting } from './types/meeting'
+import Meeting from './Meeting'
 
 function App() {
   const [isAudioEnabled, setIsAudioEnabled] = useState(true)
@@ -69,17 +70,23 @@ function App() {
   }
 
   return (
-    <Home
-      isAudioEnabled={isAudioEnabled}
-      setIsAudioEnabled={setIsAudioEnabled}
-      isVideoEnabled={isVideoEnabled}
-      setIsVideoEnabled={setIsVideoEnabled}
-      setMeeting={setMeeting}
-      setCode={setCode}
-      setUsername={setUsername}
-      username={username}
-      localStream={localStream}
-    />
+    <>
+      {meeting ? (
+        <Meeting localStream={localStream} code={code} />
+      ) : (
+        <Home
+          isAudioEnabled={isAudioEnabled}
+          setIsAudioEnabled={setIsAudioEnabled}
+          isVideoEnabled={isVideoEnabled}
+          setIsVideoEnabled={setIsVideoEnabled}
+          setMeeting={setMeeting}
+          setCode={setCode}
+          setUsername={setUsername}
+          username={username}
+          localStream={localStream}
+        />
+      )}
+    </>
   )
 }
 
