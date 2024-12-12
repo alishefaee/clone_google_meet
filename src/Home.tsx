@@ -10,6 +10,7 @@ import { TSetMeeting } from './types/meeting'
 const Home = ({
   setMeeting,
   setCode,
+  code,
   setUsername,
   username,
   isAudioEnabled,
@@ -52,6 +53,28 @@ const Home = ({
     console.log('username2:', username)
   }
 
+  function joinMeeting() {
+    if (!username) {
+      console.log('No username')
+      return
+    }
+    updateAuthToken(username)
+    socket.emit(
+      'join-meeting',
+      { id: code, aud: isAudioEnabled, vid: isVideoEnabled },
+      ({ status, msg, data }: TSetMeeting) => {
+        console.log('status:', status)
+        if (status == 'ERROR') {
+          console.log('error', msg)
+          return
+        }
+        setCode(code)
+        setMeeting(data)
+        console.log('Meeting joined')
+      }
+    )
+  }
+
   return (
     <Stack
       spacing={2}
@@ -79,7 +102,7 @@ const Home = ({
           size="small"
           onChange={(e) => setCode(e.target.value)}
         />
-        <Button size="small" variant="outlined">
+        <Button size="small" variant="outlined" onClick={joinMeeting}>
           Join
         </Button>
       </Stack>

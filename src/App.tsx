@@ -1,7 +1,5 @@
-import '@fontsource/roboto/300.css'
-import '@fontsource/roboto/400.css'
-import '@fontsource/roboto/500.css'
-import '@fontsource/roboto/700.css'
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 import './App.css'
 import { useEffect, useRef, useState } from 'react'
 import { socket } from './socket.ts'
@@ -69,10 +67,17 @@ function App() {
       })
   }
 
+  const darkTheme = createTheme({
+    palette: {
+      mode: 'dark'
+    }
+  })
+
   return (
-    <>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
       {meeting ? (
-        <Meeting localStream={localStream} code={code} />
+        <Meeting localStream={localStream} code={code} meeting={meeting} />
       ) : (
         <Home
           isAudioEnabled={isAudioEnabled}
@@ -81,12 +86,13 @@ function App() {
           setIsVideoEnabled={setIsVideoEnabled}
           setMeeting={setMeeting}
           setCode={setCode}
+          code={code}
           setUsername={setUsername}
           username={username}
           localStream={localStream}
         />
       )}
-    </>
+    </ThemeProvider>
   )
 }
 

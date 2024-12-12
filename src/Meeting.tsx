@@ -3,7 +3,7 @@ import { Box } from '@mui/material'
 import Footer from './components/Footer'
 import Drawer from './components/Drawer'
 import { DrawerLayoutEnum } from '../enum/drawer-layout.enum'
-const Meeting = ({ code, localStream }) => {
+const Meeting = ({ code, localStream, meeting }) => {
   const [drawer, setDrawer] = useState(DrawerLayoutEnum.NONE)
   const camRef = useRef<HTMLVideoElement | null>(null)
 
@@ -16,7 +16,7 @@ const Meeting = ({ code, localStream }) => {
   return (
     <Box>
       <video ref={camRef} autoPlay></video>
-      <Drawer drawer={drawer} setDrawer={setDrawer} />
+      <Drawer drawer={drawer} meeting={meeting} />
       <Footer code={code} drawer={drawer} setDrawer={setDrawer} />
     </Box>
   )

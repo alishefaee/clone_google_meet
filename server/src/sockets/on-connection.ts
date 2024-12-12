@@ -40,18 +40,19 @@ export function onConnection(io: Server) {
     })
 
     type TJoinMeeting = { id: string; aud: boolean; vid: boolean }
-    socket.on('create-meeting', ({ id, vid, aud }: TJoinMeeting, fn: Function) => {
-      console.log('create-meeting')
+    socket.on('join-meeting', ({ id, vid, aud }: TJoinMeeting, fn: Function) => {
+      console.log('join meeting')
       const meeting: any = Cache.get(id)
       meeting.participants.push({
         username: socket.handshake.auth.username,
         vid,
         aud
       })
+
       Cache.set(id, meeting)
 
       socket.join(id)
-      fn()
+      fn({ status: 'SUCCESS', mgs: 'success', data: meeting })
     })
 
     socket.on('disconnect', (data: any, fn: Function) => {
