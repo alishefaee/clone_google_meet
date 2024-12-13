@@ -1,21 +1,24 @@
-import { ThemeProvider, createTheme } from '@mui/material/styles'
-import CssBaseline from '@mui/material/CssBaseline'
 import './App.css'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { socket } from './socket.ts'
 import Home from './Home'
-import { TMeeting } from './types/meeting'
 import Meeting from './Meeting'
+import { RoomProvider, useRoomContext } from './context/RoomContext'
 
 function App() {
+  const { creator } = useRoomContext()
   const [isAudioEnabled, setIsAudioEnabled] = useState(true)
   const [isVideoEnabled, setIsVideoEnabled] = useState(true)
   const [username, setUsername] = useState('')
   const [code, setCode] = useState('')
   const [isConnected, setIsConnected] = useState(socket.connected)
-  const [meeting, setMeeting] = useState<null | TMeeting>(null)
+  // const [meeting, setMeeting] = useState<null | TMeeting>(null)
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
+
+  useEffect(() => {
+    console.log('creator:', creator)
+  }, [creator])
 
   useEffect(() => {
     setupLocalStream()
@@ -67,24 +70,16 @@ function App() {
       })
   }
 
-  const darkTheme = createTheme({
-    palette: {
-      mode: 'dark'
-    }
-  })
-
   return (
-    <ThemeProvider theme={darkTheme}>
-      <CssBaseline />
-      {meeting ? (
-        <Meeting localStream={localStream} code={code} meeting={meeting} />
+    <>
+      {creator ? (
+        <Meeting localStream={localStream} code={code} />
       ) : (
         <Home
           isAudioEnabled={isAudioEnabled}
           setIsAudioEnabled={setIsAudioEnabled}
           isVideoEnabled={isVideoEnabled}
           setIsVideoEnabled={setIsVideoEnabled}
-          setMeeting={setMeeting}
           setCode={setCode}
           code={code}
           setUsername={setUsername}
@@ -92,7 +87,7 @@ function App() {
           localStream={localStream}
         />
       )}
-    </ThemeProvider>
+    </>
   )
 }
 

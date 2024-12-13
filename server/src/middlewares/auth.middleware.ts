@@ -1,4 +1,4 @@
-import { TSocket } from '../types/socket'
+import { TSocket } from '../types'
 
 type Next = (err?: Error) => void
 

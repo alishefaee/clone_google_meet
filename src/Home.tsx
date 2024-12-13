@@ -5,10 +5,10 @@ import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { socket, updateAuthToken } from './socket.ts'
-import { TSetMeeting } from './types/meeting'
+import { TSetMeeting } from './types'
+import { useRoomContext, useRoomDispatch } from './context/RoomContext'
 
 const Home = ({
-  setMeeting,
   setCode,
   code,
   setUsername,
@@ -19,6 +19,7 @@ const Home = ({
   setIsVideoEnabled,
   localStream
 }) => {
+  const dispatch = useRoomDispatch()
   const camRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
@@ -46,7 +47,9 @@ const Home = ({
           return
         }
         setCode(id)
-        setMeeting(data)
+        dispatch({ type: 'SET_PARTICIPANTS', payload: data.participants })
+        dispatch({ type: 'SET_CREATOR', payload: data.creator })
+        console.log('dispatch creator')
         console.log('Meeting created')
       }
     )
@@ -59,20 +62,17 @@ const Home = ({
       return
     }
     updateAuthToken(username)
-    socket.emit(
-      'join-meeting',
-      { id: code, aud: isAudioEnabled, vid: isVideoEnabled },
-      ({ status, msg, data }: TSetMeeting) => {
-        console.log('status:', status)
-        if (status == 'ERROR') {
-          console.log('error', msg)
-          return
-        }
-        setCode(code)
-        setMeeting(data)
-        console.log('Meeting joined')
+    socket.emit('join-meeting-req', { roomId: code }, ({ status, msg, data }: TSetMeeting) => {
+      console.log('status:', status)
+      if (status == 'ERROR') {
+        console.log('error', msg)
+        return
       }
-    )
+      console.log('join request send')
+      // setCode(code)
+      // setMeeting(data)
+      // console.log('Meeting joined')
+    })
   }
 
   return (

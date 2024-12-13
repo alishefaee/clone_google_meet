@@ -1,5 +1,6 @@
 import { Server, Socket } from 'socket.io'
 import Cache from '../cacheHelper'
+import { TMeeting } from '../types'
 
 export function onConnection(io: Server) {
   return async (socket: Socket) => {
@@ -27,32 +28,46 @@ export function onConnection(io: Server) {
         participants: [
           {
             username: socket.handshake.auth.username,
+            sockId: socket.id,
             vid,
             aud
           }
         ]
       }
 
-      Cache.set(id, newMeeting)
+      Cache.set<TMeeting>(id, newMeeting)
 
       socket.join(id)
       fn({ status: 'SUCCESS', mgs: 'success', data: newMeeting })
     })
 
-    type TJoinMeeting = { id: string; aud: boolean; vid: boolean }
-    socket.on('join-meeting', ({ id, vid, aud }: TJoinMeeting, fn: Function) => {
-      console.log('join meeting')
-      const meeting: any = Cache.get(id)
-      meeting.participants.push({
-        username: socket.handshake.auth.username,
-        vid,
-        aud
+    type TJoinMeeting = { roomId: string }
+    socket.on('join-meeting-req', ({ roomId }: TJoinMeeting, fn: Function) => {
+      console.log('join meeting req')
+      const meeting = Cache.get<TMeeting>(roomId)
+      if (!meeting) {
+        fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
+        return
+      }
+      const creator = meeting.participants.find((ptc) => ptc.username == meeting.creator)!
+
+      socket.to(creator.sockId).emit('join-req', {
+        roomId,
+        username: socket.handshake.auth.username
       })
+      fn({ status: 'SUCCESS', mgs: 'join request sent', data: {} })
 
-      Cache.set(id, meeting)
-
-      socket.join(id)
-      fn({ status: 'SUCCESS', mgs: 'success', data: meeting })
+      // meeting.participants.push({
+      //   username: socket.handshake.auth.username,
+      //   sockId: socket.id,
+      //   vid,
+      //   aud
+      // })
+      //
+      // Cache.set(id, meeting)
+      //
+      // socket.join(id)
+      // fn({ status: 'SUCCESS', mgs: 'success', data: meeting })
     })
 
     socket.on('disconnect', (data: any, fn: Function) => {

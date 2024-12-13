@@ -4,10 +4,10 @@ import PeopleLayout from './PeopleLayout.tsx'
 import ChatLayout from './ChatLayout.tsx'
 import { DrawerLayoutEnum } from '../../enum/drawer-layout.enum'
 
-export default function AnchorTemporaryDrawer({ drawer, meeting }) {
+export default function AnchorTemporaryDrawer({ drawer }) {
   return (
     <Drawer anchor="right" open={drawer != DrawerLayoutEnum.NONE}>
-      {drawer == DrawerLayoutEnum.PEOPLE && <PeopleLayout meeting={meeting} />}
+      {drawer == DrawerLayoutEnum.PEOPLE && <PeopleLayout />}
       {drawer == DrawerLayoutEnum.CHAT && <ChatLayout />}
     </Drawer>
   )

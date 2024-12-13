@@ -6,10 +6,9 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev src/index.ts",
     "start": "cross-env NODE_ENV=production node build/src/index.js",
-    "build": "del build/* && tsc && npm run copy-assets",
+    "build": "del build/* && tsc",
     "start:win": "cross-env NODE_ENV=production node build/src/index.js",
-    "build:win": "del-cli build/* && tsc && npm run copy-assets",
-    "copy-assets": "copyfiles -f ./src/views/* ./build/src/views",
+    "build:win": "del-cli build/* && tsc",
     "test": "vitest"
   },
   "keywords": [],
