@@ -68,7 +68,7 @@ function App() {
   return (
     <>
       {creator ? (
-        <Meeting localStream={localStream} code={code} />
+        <Meeting localStream={localStream} code={code} username={username} />
       ) : (
         <Home
           isAudioEnabled={isAudioEnabled}

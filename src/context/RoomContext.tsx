@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useReducer, useContext } from 'react'
+import React, { createContext, ReactNode, useContext, useReducer } from 'react'
 import { Message, TParticipant } from '../types'
 
 const configuration = {
@@ -14,7 +14,6 @@ interface RoomState {
   creator: string
   messages: Message[]
   roomId: string
-  pc: RTCPeerConnection | null
 }
 
 interface RoomContextProps extends RoomState {}
@@ -23,26 +22,33 @@ const initialState: RoomState = {
   participants: [],
   creator: '',
   messages: [],
-  roomId: '',
-  pc: null
+  roomId: ''
 }
 
 type Actions =
-  | { type: 'ADD_PERSON'; payload: TParticipant }
+  | { type: 'ADD_PARTICIPANT'; payload: TParticipant }
+  | { type: 'EDIT_PARTICIPANT'; payload: Partial<TParticipant> & { username: string } }
   | { type: 'REMOVE_PERSON'; payload: string }
   | { type: 'ADD_MESSAGE'; payload: Message }
   | { type: 'SET_ROOM'; payload: string }
   | { type: 'SET_PARTICIPANTS'; payload: TParticipant[] }
   | { type: 'SET_CREATOR'; payload: string }
-  | null
 
 function roomReducer(state: RoomState, action: Actions): RoomState {
   switch (action.type) {
-    case 'ADD_PERSON':
+    case 'ADD_PARTICIPANT':
       return {
         ...state,
         participants: [...state.participants, action.payload]
       }
+    case 'EDIT_PARTICIPANT': {
+      return {
+        ...state,
+        participants: state.participants.map((p) =>
+          p.username == action.payload.username ? { ...p, ...action.payload } : p
+        )
+      } as RoomState
+    }
     case 'REMOVE_PERSON':
       return {
         ...state,
@@ -73,7 +79,6 @@ function roomReducer(state: RoomState, action: Actions): RoomState {
   }
 }
 
-// Create context with default values
 const RoomContext = createContext<RoomContextProps>({
   ...initialState
 })
@@ -84,7 +89,6 @@ interface RoomProviderProps {
   children: ReactNode
 }
 
-// Context provider component
 export function RoomProvider({ children }: RoomProviderProps) {
   const [state, dispatch] = useReducer(roomReducer, initialState, undefined)
 
@@ -95,10 +99,10 @@ export function RoomProvider({ children }: RoomProviderProps) {
   )
 }
 
-// Custom hook to use the RoomContext
 export const useRoomContext = () => {
   return useContext(RoomContext)
 }
+
 export function useRoomDispatch() {
   return useContext(RoomDispatchContext)
 }

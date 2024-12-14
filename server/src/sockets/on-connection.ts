@@ -10,14 +10,36 @@ export function onConnection(io: Server) {
       socket.broadcast.emit('candidate', candidate)
     })
 
-    socket.on('offer', ({ offer, meetingId }) => {
+    socket.on('offer', ({ offer, roomId, username }) => {
       console.log('Offer received:', offer)
-      socket.to(meetingId).emit('offer', { offer, meetingId })
+      // socket.to(meetingId).emit('offer', { offer, meetingId })
     })
 
     socket.on('answer', ({ answer, meetingId }) => {
       console.log('Answer received:', answer)
       socket.to(meetingId).emit('answer', answer)
+    })
+
+    socket.on('join-accept', ({ roomId }, fn: Function) => {
+      console.log('join meeting accepted')
+      const meeting = Cache.get<TMeeting>(roomId)
+      if (!meeting) {
+        fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
+        return
+      }
+      const newPtc = {
+        username: socket.handshake.auth.username,
+        sockId: socket.id,
+        vid: false,
+        aud: false
+      }
+      meeting.participants.push(newPtc)
+
+      Cache.set(roomId, meeting)
+
+      socket.join(roomId)
+      socket.to(roomId).emit('participant-new', newPtc)
+      fn({ status: 'SUCCESS', mgs: 'added to meeting group', data: newPtc })
     })
 
     type TCreateMeeting = { id: string; aud: boolean; vid: boolean }
@@ -56,18 +78,6 @@ export function onConnection(io: Server) {
         username: socket.handshake.auth.username
       })
       fn({ status: 'SUCCESS', mgs: 'join request sent', data: {} })
-
-      // meeting.participants.push({
-      //   username: socket.handshake.auth.username,
-      //   sockId: socket.id,
-      //   vid,
-      //   aud
-      // })
-      //
-      // Cache.set(id, meeting)
-      //
-      // socket.join(id)
-      // fn({ status: 'SUCCESS', mgs: 'success', data: meeting })
     })
 
     socket.on('disconnect', (data: any, fn: Function) => {

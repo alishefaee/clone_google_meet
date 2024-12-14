@@ -3,6 +3,8 @@ export type TParticipant = {
   sockId: string
   vid: boolean
   aud: boolean
+  stream?: MediaStream
+  pc?: RTCPeerConnection
 }
 export type TMeeting = {
   creator: string
