@@ -19,10 +19,10 @@ const configuration = {
   ]
 }
 
-const JoinRequest = ({ stream }) => {
+const JoinRequest = () => {
   const [joinReqs, setJoinReqs] = useState<TJoinReq[]>([])
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
-  const [remoteStream, setRemoteStream] = useState<Map<string, MediaStream>>(new Map())
+  // const peerConnectionRef = useRef<RTCPeerConnection | null>(null)
+  // const [remoteStream, setRemoteStream] = useState<Map<string, MediaStream>>(new Map())
 
   useEffect(() => {
     socket.on('join-req', (data: TJoinReq) => {
@@ -43,51 +43,6 @@ const JoinRequest = ({ stream }) => {
       socket.emit('offer', { offer, meetingId })
     }
   }
-
-  const createPeerConnection = useCallback(async () => {
-    console.log('createPeerConnection')
-    if (!peerConnectionRef.current) {
-      const pc = new RTCPeerConnection(configuration)
-      const remoteStream = new MediaStream()
-
-      setRemoteStream(remoteStream)
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = remoteStream
-      }
-
-      console.log('Remote track about')
-      pc.ontrack = (event) => {
-        console.log('Remote track received', event)
-        remoteStream.addTrack(event.track)
-
-        handleRemoteTrackStateChange()
-      }
-
-      pc.onicecandidate = (event) => {
-        if (event.candidate) {
-          console.log('ICE candidate sent', event.candidate)
-          socket.emit('candidate', event.candidate)
-        }
-      }
-
-      pc.oniceconnectionstatechange = () => {
-        console.log('ICE connection state change', pc.iceConnectionState)
-      }
-
-      pc.onsignalingstatechange = () => {
-        console.log('Signaling state change', pc.signalingState)
-      }
-
-      if (stream) {
-        stream.getTracks().forEach((track) => {
-          console.log('Adding track:', track)
-          pc.addTrack(track, stream)
-        })
-      }
-
-      peerConnectionRef.current = pc
-    }
-  }, [stream])
 
   const handleAdmit = (req: TJoinReq) => {
     handleOffer(req.roomId)

@@ -12,13 +12,8 @@ function App() {
   const [username, setUsername] = useState('')
   const [code, setCode] = useState('')
   const [isConnected, setIsConnected] = useState(socket.connected)
-  // const [meeting, setMeeting] = useState<null | TMeeting>(null)
 
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
-
-  useEffect(() => {
-    console.log('creator:', creator)
-  }, [creator])
 
   useEffect(() => {
     setupLocalStream()

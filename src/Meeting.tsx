@@ -17,7 +17,7 @@ const Meeting = ({ code, localStream }) => {
   return (
     <Box>
       <video ref={camRef} autoPlay></video>
-      {/*<JoinRequest />*/}
+      <JoinRequest />
       <Drawer drawer={drawer} />
       <Footer code={code} drawer={drawer} setDrawer={setDrawer} />
     </Box>

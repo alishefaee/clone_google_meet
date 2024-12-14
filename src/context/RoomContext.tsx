@@ -17,12 +17,7 @@ interface RoomState {
   pc: RTCPeerConnection | null
 }
 
-interface RoomContextProps extends RoomState {
-  addPerson: (username: TParticipant) => void
-  removePerson: (username: string) => void
-  addMessage: (message: Message) => void
-  setRoomId: (id: string) => void
-}
+interface RoomContextProps extends RoomState {}
 
 const initialState: RoomState = {
   participants: [],
@@ -80,11 +75,7 @@ function roomReducer(state: RoomState, action: Actions): RoomState {
 
 // Create context with default values
 const RoomContext = createContext<RoomContextProps>({
-  ...initialState,
-  addPerson: () => {},
-  removePerson: () => {},
-  addMessage: () => {},
-  setRoomId: () => {}
+  ...initialState
 })
 
 const RoomDispatchContext = createContext<React.Dispatch<Actions>>(null)
@@ -97,26 +88,8 @@ interface RoomProviderProps {
 export function RoomProvider({ children }: RoomProviderProps) {
   const [state, dispatch] = useReducer(roomReducer, initialState, undefined)
 
-  const addPerson = (username: TParticipant) => {
-    dispatch({ type: 'ADD_PERSON', payload: username })
-  }
-
-  const removePerson = (username: string) => {
-    dispatch({ type: 'REMOVE_PERSON', payload: username })
-  }
-
-  const addMessage = (message: Message) => {
-    dispatch({ type: 'ADD_MESSAGE', payload: message })
-  }
-
-  const setRoomId = (id: string) => {
-    dispatch({ type: 'SET_ROOM', payload: id })
-  }
-
-  const setupRTCPeerConn = () => {}
-
   return (
-    <RoomContext.Provider value={{ ...state, addPerson, removePerson, addMessage, setRoomId }}>
+    <RoomContext.Provider value={{ ...state }}>
       <RoomDispatchContext.Provider value={dispatch}>{children}</RoomDispatchContext.Provider>
     </RoomContext.Provider>
   )
