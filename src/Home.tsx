@@ -61,7 +61,10 @@ const Home = ({
       console.log('No username')
       return
     }
+    console.log('log1')
     updateAuthToken(username)
+    // socket.connect()
+    console.log('log2')
     socket.emit('join-meeting-req', { roomId: code }, ({ status, msg, data }: TSetMeeting) => {
       console.log('status:', status)
       if (status == 'ERROR') {
@@ -84,14 +87,6 @@ const Home = ({
       alignItems="center"
     >
       <Stack spacing={1}>
-        <TextField
-          placeholder="username"
-          size="small"
-          label="username"
-          required
-          onChange={(e) => setUsername(e.target.value)}
-        />
-        <Divider />
         <Button size="small" variant="contained" onClick={setNewMeeting}>
           New Meeting
         </Button>

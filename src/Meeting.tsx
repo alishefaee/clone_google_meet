@@ -26,13 +26,67 @@ const Meeting = ({ code, localStream, username }) => {
     socket.on('participant-new', (data: TParticipant) => {
       if (data.username == username) {
         console.log('It is me')
-        return
       }
       handleOffer(data)
     })
 
+    socket.on(
+      'offer',
+      async ({
+        offer,
+        roomId,
+        username
+      }: {
+        offer: RTCSessionDescriptionInit
+        roomId: string
+        username: string
+      }) => {
+        console.log('Offer received', offer)
+        const peerConnection = new RTCPeerConnection(configuration)
+        const signalingState = peerConnection.signalingState
+        if (signalingState !== 'stable') {
+          console.error(`Cannot handle offer. Current signaling state: ${signalingState}`)
+          return
+        }
+        await peerConnection.setRemoteDescription(offer)
+        if (peerConnection.signalingState !== 'have-remote-offer') {
+          console.error(
+            `Failed to create an answer: invalid signaling state ${peerConnection.signalingState}`
+          )
+          return
+        }
+        const answer = await peerConnection.createAnswer()
+        await peerConnection.setLocalDescription(answer)
+        socket.emit('answer', { answer, roomId, username })
+      }
+    )
+
+    socket.on(
+      'answer',
+      ({
+        answer,
+        roomId,
+        username: caller
+      }: {
+        answer: RTCSessionDescriptionInit
+        roomId: string
+        username: string
+      }) => {
+        console.log('answer received:', answer)
+        if (peerConnection.signalingState !== 'have-local-offer') {
+          console.error(
+            'Failed to set remote description: not in have-local-offer state. Current state:',
+            peerConnection.signalingState
+          )
+          return
+        }
+      }
+    )
+
     return () => {
       socket.off('participant-new')
+      socket.off('offer')
+      socket.off('answer')
     }
   }, [])
 
@@ -72,7 +126,7 @@ const Meeting = ({ code, localStream, username }) => {
 
     const offer = await peerConnection.createOffer()
     await peerConnection.setLocalDescription(offer)
-    socket.emit('offer', { offer, username, roomId })
+    socket.emit('offer', { offer, targetUsername: data.username, roomId })
   }
 
   return (

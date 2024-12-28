@@ -6,6 +6,7 @@ import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
 import { socket } from '../socket.ts'
 import { useRoomContext, useRoomDispatch } from '../context/RoomContext'
+import { TParticipant, TSetMeeting } from '../types'
 
 type TJoinReq = {
   username: string
@@ -19,6 +20,7 @@ const JoinRequest = ({ username }) => {
 
   useEffect(() => {
     socket.on('join-req', (data: TJoinReq) => {
+      console.log('join-req', data)
       setJoinReqs((pre) => pre.concat(data))
     })
 
@@ -29,7 +31,13 @@ const JoinRequest = ({ username }) => {
 
   const handleAdmit = (req: TJoinReq) => {
     // handleOffer(req.username)
-    socket.emit('join-accept', {})
+    socket.emit('join-accept', { roomId }, ({ status, msg, data }: TSetMeeting) => {
+      console.log('status:', status)
+      if (status == 'ERROR') {
+        console.log('error', msg)
+        return
+      }
+    })
     setJoinReqs((pre) => pre.filter((r) => r.username != req.username))
   }
 

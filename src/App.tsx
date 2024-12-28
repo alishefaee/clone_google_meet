@@ -1,6 +1,6 @@
 import './App.css'
 import { useEffect, useState } from 'react'
-import { socket } from './socket.ts'
+import { socket, updateAuthToken } from './socket.ts'
 import Home from './Home'
 import Meeting from './Meeting'
 import { RoomProvider, useRoomContext } from './context/RoomContext'
@@ -16,8 +16,18 @@ function App() {
   const [localStream, setLocalStream] = useState<MediaStream | null>(null)
 
   useEffect(() => {
+    let userInput = ''
+    while (!userInput) {
+      userInput = window.prompt('Please enter some input:', '')
+      if (userInput == null) continue
+      setUsername(userInput)
+      localStorage.setItem('username', userInput)
+      updateAuthToken(userInput)
+    }
+
     setupLocalStream()
 
+    console.log('dddd:', username)
     socket.connect()
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)
@@ -27,6 +37,10 @@ function App() {
       socket.off('disconnect', onDisconnect)
     }
   }, [])
+
+  useEffect(() => {
+    console.log('cccc:', username)
+  }, [username])
 
   useEffect(() => {
     if (localStream) {

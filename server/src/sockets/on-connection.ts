@@ -10,14 +10,37 @@ export function onConnection(io: Server) {
       socket.broadcast.emit('candidate', candidate)
     })
 
-    socket.on('offer', ({ offer, roomId, username }) => {
+    socket.on('offer', ({ offer, roomId, targetUsername }, fn: Function) => {
       console.log('Offer received:', offer)
+      const meeting = Cache.get<TMeeting>(roomId)
+      if (!meeting) {
+        fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
+        return
+      }
+      const targetUser = meeting.participants.find((ptc) => ptc.username == targetUsername)!
+
+      socket.to(targetUser.sockId).emit('offer', {
+        offer,
+        roomId,
+        username: socket.handshake.auth.username
+      })
+      fn({ status: 'SUCCESS', mgs: 'join request sent', data: {} })
       // socket.to(meetingId).emit('offer', { offer, meetingId })
     })
 
-    socket.on('answer', ({ answer, meetingId }) => {
+    socket.on('answer', ({ answer, roomId, username }, fn: Function) => {
       console.log('Answer received:', answer)
-      socket.to(meetingId).emit('answer', answer)
+      const meeting = Cache.get<TMeeting>(roomId)
+      if (!meeting) {
+        fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
+        return
+      }
+      const targetUser = meeting.participants.find((ptc) => ptc.username == username)!
+      socket.to(targetUser.sockId).emit('answer', {
+        answer,
+        roomId,
+        username: socket.handshake.auth.username
+      })
     })
 
     socket.on('join-accept', ({ roomId }, fn: Function) => {
