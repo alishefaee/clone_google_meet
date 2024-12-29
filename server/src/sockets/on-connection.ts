@@ -43,26 +43,47 @@ export function onConnection(io: Server) {
       })
     })
 
-    socket.on('join-accept', ({ roomId }, fn: Function) => {
+    socket.on('join-accept', ({ roomId, username, sockId }, fn: Function) => {
       console.log('join meeting accepted')
       const meeting = Cache.get<TMeeting>(roomId)
+      console.log('meeting:', meeting)
       if (!meeting) {
         fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
         return
       }
+
+      // const caller = meeting.participants.find((pc) => pc.username == username)
+      // if (!caller) {
+      //   fn({ status: 'ERROR', mgs: 'No caller found', data: {} })
+      //   return
+      // }
+
       const newPtc = {
-        username: socket.handshake.auth.username,
-        sockId: socket.id,
+        username,
+        sockId,
         vid: false,
         aud: false
       }
       meeting.participants.push(newPtc)
 
       Cache.set(roomId, meeting)
+      console.log('roomId:', roomId, newPtc)
 
-      socket.join(roomId)
+      const targetSocket = io.sockets.sockets.get(sockId)
+      if (!targetSocket) {
+        fn({ status: 'ERROR', mgs: 'No socket found', data: {} })
+        return
+      }
+      targetSocket.join(roomId)
+      // socket.join(roomId)
+
+      io.sockets.adapter.rooms.forEach((members, room) => {
+        console.log(`Room ${room}: Members ${Array.from(members.keys())}`)
+      })
+
+      targetSocket.emit('init-meeting', meeting as any)
       socket.to(roomId).emit('participant-new', newPtc)
-      fn({ status: 'SUCCESS', mgs: 'added to meeting group', data: newPtc })
+      fn({ status: 'SUCCESS', mgs: 'added to meeting group', data: meeting })
     })
 
     type TCreateMeeting = { id: string; aud: boolean; vid: boolean }
@@ -81,15 +102,21 @@ export function onConnection(io: Server) {
       }
 
       Cache.set<TMeeting>(id, newMeeting)
-
+      console.log('Cache:', id, Cache.keys())
       socket.join(id)
+
+      io.sockets.adapter.rooms.forEach((members, room) => {
+        console.log(`Room ${room}: Members ${Array.from(members.keys())}`)
+      })
+
       fn({ status: 'SUCCESS', mgs: 'success', data: newMeeting })
     })
 
     type TJoinMeeting = { roomId: string }
     socket.on('join-meeting-req', ({ roomId }: TJoinMeeting, fn: Function) => {
-      console.log('join meeting req')
+      console.log('join meeting req', roomId, Cache.keys())
       const meeting = Cache.get<TMeeting>(roomId)
+      console.log('meet')
       if (!meeting) {
         fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
         return
@@ -98,7 +125,8 @@ export function onConnection(io: Server) {
 
       socket.to(creator.sockId).emit('join-req', {
         roomId,
-        username: socket.handshake.auth.username
+        username: socket.handshake.auth.username,
+        sockId: socket.id
       })
       fn({ status: 'SUCCESS', mgs: 'join request sent', data: {} })
     })

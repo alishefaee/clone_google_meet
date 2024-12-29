@@ -5,8 +5,7 @@ import Drawer from './components/Drawer'
 import { DrawerLayoutEnum } from '../enum/drawer-layout.enum'
 import JoinRequest from './components/JoinRequest'
 import { socket } from './socket'
-import { TParticipant } from './types'
-import { useRoomContext, useRoomDispatch } from './context/RoomContext'
+import { useRoomContext } from './context/RoomContext'
 
 const configuration = {
   iceServers: [
@@ -17,19 +16,11 @@ const configuration = {
 }
 
 const Meeting = ({ code, localStream, username }) => {
-  const { roomId } = useRoomContext()
-  const dispatch = useRoomDispatch()
+  const { participants } = useRoomContext()
   const [drawer, setDrawer] = useState(DrawerLayoutEnum.NONE)
   const camRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
-    socket.on('participant-new', (data: TParticipant) => {
-      if (data.username == username) {
-        console.log('It is me')
-      }
-      handleOffer(data)
-    })
-
     socket.on(
       'offer',
       async ({
@@ -57,13 +48,15 @@ const Meeting = ({ code, localStream, username }) => {
         }
         const answer = await peerConnection.createAnswer()
         await peerConnection.setLocalDescription(answer)
-        socket.emit('answer', { answer, roomId, username })
+        socket.emit('answer', { answer, roomId, username }, () => {
+          console.log('answer processed')
+        })
       }
     )
 
     socket.on(
       'answer',
-      ({
+      async ({
         answer,
         roomId,
         username: caller
@@ -73,18 +66,23 @@ const Meeting = ({ code, localStream, username }) => {
         username: string
       }) => {
         console.log('answer received:', answer)
-        if (peerConnection.signalingState !== 'have-local-offer') {
+
+        const ptc = participants.find((pc) => pc.username == caller)
+        console.log('state:', ptc.pc.signalingState)
+        if (ptc.pc.signalingState !== 'have-local-offer') {
           console.error(
             'Failed to set remote description: not in have-local-offer state. Current state:',
-            peerConnection.signalingState
+            ptc.pc.signalingState
           )
           return
         }
+
+        const remoteDesc = new RTCSessionDescription(answer)
+        await ptc.pc.setRemoteDescription(remoteDesc)
       }
     )
 
     return () => {
-      socket.off('participant-new')
       socket.off('offer')
       socket.off('answer')
     }
@@ -95,39 +93,6 @@ const Meeting = ({ code, localStream, username }) => {
       camRef.current!.srcObject = localStream
     }
   }, [localStream])
-
-  async function handleOffer(data: TParticipant) {
-    const peerConnection = new RTCPeerConnection(configuration)
-    peerConnection.ontrack = (event) => {
-      console.log('Remote track received', event)
-      // todo: add remote tracks
-      // remoteStream.addTrack(event.track)
-      // handleRemoteTrackStateChange()
-    }
-
-    peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        console.log('ICE candidate sent', event.candidate)
-        socket.emit('candidate', event.candidate)
-      }
-    }
-
-    peerConnection.oniceconnectionstatechange = () => {
-      console.log('ICE connection state change', peerConnection.iceConnectionState)
-    }
-
-    peerConnection.onsignalingstatechange = () => {
-      console.log('Signaling state change', peerConnection.signalingState)
-    }
-    dispatch({
-      type: 'ADD_PARTICIPANT',
-      payload: { ...data, pc: peerConnection, stream: undefined }
-    })
-
-    const offer = await peerConnection.createOffer()
-    await peerConnection.setLocalDescription(offer)
-    socket.emit('offer', { offer, targetUsername: data.username, roomId })
-  }
 
   return (
     <Box>

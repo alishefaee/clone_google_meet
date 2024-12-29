@@ -11,6 +11,7 @@ import { TParticipant, TSetMeeting } from '../types'
 type TJoinReq = {
   username: string
   roomId: string
+  sockId: string
 }
 
 const JoinRequest = ({ username }) => {
@@ -31,13 +32,18 @@ const JoinRequest = ({ username }) => {
 
   const handleAdmit = (req: TJoinReq) => {
     // handleOffer(req.username)
-    socket.emit('join-accept', { roomId }, ({ status, msg, data }: TSetMeeting) => {
-      console.log('status:', status)
-      if (status == 'ERROR') {
-        console.log('error', msg)
-        return
+    console.log('rooomId:', roomId)
+    socket.emit(
+      'join-accept',
+      { roomId, username: req.username, sockId: req.sockId },
+      ({ status, msg, data }: TSetMeeting) => {
+        console.log('status:', status)
+        if (status == 'ERROR') {
+          console.log('error', msg)
+          return
+        }
       }
-    })
+    )
     setJoinReqs((pre) => pre.filter((r) => r.username != req.username))
   }
 

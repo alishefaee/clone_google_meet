@@ -36,6 +36,7 @@ const Home = ({
     }
     updateAuthToken(username)
 
+    dispatch({ type: 'SET_ROOM', payload: id })
     console.log('username:', username)
     socket.emit(
       'create-meeting',
@@ -56,6 +57,10 @@ const Home = ({
     console.log('username2:', username)
   }
 
+  useEffect(() => {
+    console.log('code:', code)
+  }, [code])
+
   function joinMeeting() {
     if (!username) {
       console.log('No username')
@@ -64,7 +69,8 @@ const Home = ({
     console.log('log1')
     updateAuthToken(username)
     // socket.connect()
-    console.log('log2')
+    dispatch({ type: 'SET_ROOM', payload: code })
+    console.log('log2', code)
     socket.emit('join-meeting-req', { roomId: code }, ({ status, msg, data }: TSetMeeting) => {
       console.log('status:', status)
       if (status == 'ERROR') {
