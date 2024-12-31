@@ -1,14 +1,6 @@
 import React, { createContext, ReactNode, useContext, useReducer } from 'react'
 import { Message, TParticipant } from '../types'
 
-const configuration = {
-  iceServers: [
-    {
-      urls: 'stun:stun.l.google.com:19302'
-    }
-  ]
-}
-
 interface RoomState {
   participants: TParticipant[]
   creator: string

@@ -14,7 +14,7 @@ import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { DrawerLayoutEnum } from '../../enum/drawer-layout.enum'
 
-export default function Footer({ code, setDrawer, drawer }) {
+export default function Footer({ code, setDrawer, drawer, username }) {
   // const { stream, toggleAudioTrack, toggleVideoTrack, videoEnabled, audioEnabled } = useWebRTC()
   function dialogLayoutHandler(name: DrawerLayoutEnum) {
     if (name === drawer) {
@@ -46,7 +46,7 @@ export default function Footer({ code, setDrawer, drawer }) {
         pr: 2
       }}
     >
-      <Typography variant="caption">{code}</Typography>
+      <Typography variant="caption">{`${code} | ${username}`}</Typography>
       <Stack direction="row" sx={{ justifyContent: 'center', flex: 1 }}>
         <IconButton>
           {' '}

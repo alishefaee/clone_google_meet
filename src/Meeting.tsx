@@ -26,29 +26,56 @@ const Meeting = ({ code, localStream, username }) => {
       async ({
         offer,
         roomId,
-        username
+        username: caller
       }: {
         offer: RTCSessionDescriptionInit
         roomId: string
         username: string
       }) => {
-        console.log('Offer received', offer)
-        const peerConnection = new RTCPeerConnection(configuration)
-        const signalingState = peerConnection.signalingState
-        if (signalingState !== 'stable') {
-          console.error(`Cannot handle offer. Current signaling state: ${signalingState}`)
+        console.log('Offer received', roomId, caller)
+        const ptc = participants.find((p) => p.username == caller)
+        const pc = new RTCPeerConnection(configuration)
+        console.log('pc found:', !!pc)
+        pc.ontrack = (ev) => {
+          console.log('Remote track received', ev)
+          ptc.stream.addTrack(ev.track)
+          ptc.aud = ptc.stream.getAudioTracks()[0].enabled
+          ptc.vid = ptc.stream.getVideoTracks()[0].enabled
+        }
+
+        pc.onicecandidate = (ev) => {
+          console.log('IICE candidate sent', ev.candidate)
+          if (ev.candidate) {
+            socket.emit('candidate', { candidate: ev.candidate, roomId })
+          }
+        }
+
+        pc.oniceconnectionstatechange = () => {
+          console.log('IICE connection state change', pc.iceConnectionState)
+        }
+
+        pc.onsignalingstatechange = () => {
+          console.log('SSignaling state change', pc.signalingState)
+        }
+
+        localStream.getTracks().forEach((track) => {
+          console.log('AAdding track:', track)
+          pc.addTrack(track, localStream)
+        })
+
+        if (pc.signalingState !== 'stable') {
+          console.error(`Cannot handle offer. Current signaling state: ${pc.signalingState}`)
           return
         }
-        await peerConnection.setRemoteDescription(offer)
-        if (peerConnection.signalingState !== 'have-remote-offer') {
-          console.error(
-            `Failed to create an answer: invalid signaling state ${peerConnection.signalingState}`
-          )
+        await pc.setRemoteDescription(offer)
+        if (pc.signalingState !== 'have-remote-offer') {
+          console.error(`Failed to create an answer: invalid signaling state ${pc.signalingState}`)
           return
         }
-        const answer = await peerConnection.createAnswer()
-        await peerConnection.setLocalDescription(answer)
-        socket.emit('answer', { answer, roomId, username }, () => {
+        const answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+        ptc.pc = pc
+        socket.emit('answer', { answer, roomId, username: caller }, () => {
           console.log('answer processed')
         })
       }
@@ -65,7 +92,7 @@ const Meeting = ({ code, localStream, username }) => {
         roomId: string
         username: string
       }) => {
-        console.log('answer received:', answer)
+        console.log('answer received:', caller, participants)
 
         const ptc = participants.find((pc) => pc.username == caller)
         console.log('state:', ptc.pc.signalingState)
@@ -86,7 +113,7 @@ const Meeting = ({ code, localStream, username }) => {
       socket.off('offer')
       socket.off('answer')
     }
-  }, [])
+  }, [participants])
 
   useEffect(() => {
     if (localStream && camRef.current) {
@@ -94,14 +121,34 @@ const Meeting = ({ code, localStream, username }) => {
     }
   }, [localStream])
 
+  useEffect(() => {
+    console.log('participants:', participants)
+  }, [participants])
+
   return (
     <Box>
       <video ref={camRef} autoPlay></video>
+      {participants
+        .filter((p) => p.username !== username)
+        .map((p) => (
+          <ParticipantVideo key={p.username} stream={p.stream} />
+        ))}
       <JoinRequest username={username} />
       <Drawer drawer={drawer} />
-      <Footer code={code} drawer={drawer} setDrawer={setDrawer} />
+      <Footer code={code} drawer={drawer} setDrawer={setDrawer} username={username} />
     </Box>
   )
 }
 
+const ParticipantVideo = ({ stream }) => {
+  const videoRef = useRef(null)
+
+  useEffect(() => {
+    if (videoRef.current && stream) {
+      videoRef.current.srcObject = stream
+    }
+  }, [stream])
+
+  return <video ref={videoRef} autoPlay />
+}
 export default Meeting

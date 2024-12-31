@@ -37,7 +37,7 @@ const JoinRequest = ({ username }) => {
       'join-accept',
       { roomId, username: req.username, sockId: req.sockId },
       ({ status, msg, data }: TSetMeeting) => {
-        console.log('status:', status)
+        console.log('status:', status, msg)
         if (status == 'ERROR') {
           console.log('error', msg)
           return
