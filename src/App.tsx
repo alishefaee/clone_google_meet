@@ -17,7 +17,7 @@ const configuration = {
 }
 
 function App() {
-  const { creator, roomId, participants } = useRoomContext()
+  const { creator, roomId, participants, pcs, streams } = useRoomContext()
   const dispatch = useRoomDispatch()
   const [isAudioEnabled, setIsAudioEnabled] = useState(true)
   const [isVideoEnabled, setIsVideoEnabled] = useState(true)
@@ -34,7 +34,6 @@ function App() {
     socket.on('init-meeting', (meeting: TMeeting) => {
       dispatch({ type: 'SET_PARTICIPANTS', payload: meeting.participants })
       dispatch({ type: 'SET_CREATOR', payload: meeting.creator })
-      // dispatch({type:'SET_ROOM', payload: meeting.})
     })
 
     return () => {
@@ -62,7 +61,9 @@ function App() {
       }) => {
         console.log('ICE candidate received', candidate, caller, participants)
         const ptc = participants.find((p) => p.username == caller)
-        await ptc.pc.addIceCandidate(candidate)
+        console.log('ptc:', ptc, pcs.current.get(ptc.username))
+        console.log('pc get:', ptc.username, pcs.current.get(ptc.username))
+        await pcs.current.get(ptc.username).addIceCandidate(candidate)
       }
     )
     return () => {
@@ -96,23 +97,32 @@ function App() {
   }
 
   async function handleOffer(data: TParticipant) {
-    const peerConnection = new RTCPeerConnection(configuration)
-    peerConnection.ontrack = (ev) => {
+    const pc = new RTCPeerConnection(configuration)
+    pcs.current.set(data.username, pc)
+    console.log('pc set:', data.username)
+    localStream.getTracks().forEach((track) => {
+      console.log('AAdding track:', track)
+      pc.addTrack(track, localStream)
+    })
+
+    pc.ontrack = (ev) => {
       console.log('Remote track received', ev)
-      data.stream = new MediaStream()
-      data.stream.addTrack(ev.track)
+      const newStream = new MediaStream()
+      newStream.addTrack(ev.track)
+      console.log('getVideoTracks( ) caller:', newStream.getAudioTracks())
       dispatch({
         type: 'EDIT_PARTICIPANT',
         payload: {
-          aud: !!data.stream.getAudioTracks()[0]?.enabled,
-          vid: !!data.stream.getVideoTracks()[0]?.enabled,
+          aud: !!newStream.getAudioTracks()[0]?.enabled,
+          vid: !!newStream.getVideoTracks()[0]?.enabled,
           username: data.username
         }
       })
+      streams.current.set(data.username, newStream)
     }
 
-    peerConnection.onicecandidate = (ev) => {
-      console.log('peerConnection.onicecandidate')
+    pc.onicecandidate = (ev) => {
+      console.log('pc.onicecandidate')
       if (ev.candidate) {
         socket.emit(
           'candidate',
@@ -127,23 +137,23 @@ function App() {
       }
     }
 
-    peerConnection.oniceconnectionstatechange = () => {
-      console.log('ICE connection state change', peerConnection.iceConnectionState)
+    pc.oniceconnectionstatechange = () => {
+      console.log('ICE connection state change', pc.iceConnectionState)
     }
 
-    peerConnection.onsignalingstatechange = () => {
-      console.log('Signaling state change', peerConnection.signalingState)
+    pc.onsignalingstatechange = () => {
+      console.log('Signaling state change', pc.signalingState)
     }
     dispatch({
       type: 'ADD_PARTICIPANT',
-      payload: { ...data, pc: peerConnection, stream: new MediaStream() }
+      payload: data
     })
 
-    const offer = await peerConnection.createOffer({
+    const offer = await pc.createOffer({
       offerToReceiveAudio: true,
       offerToReceiveVideo: true
     })
-    await peerConnection.setLocalDescription(offer)
+    await pc.setLocalDescription(offer)
     console.log('roomId::', roomId)
     socket.emit('offer', { offer, targetUsername: data.username, roomId }, () => {
       console.log('offer processed')
@@ -174,7 +184,7 @@ function App() {
             onSubmit: (event) => {
               event.preventDefault()
               const formData = new FormData(event.currentTarget)
-              const formJson = Object.fromEntries(formData.entries())
+              const formJson = (Object as any).fromEntries(formData.entries())
               console.log(formJson.username)
               setUsername(formJson.username)
               updateAuthToken(formJson.username)
@@ -185,10 +195,6 @@ function App() {
       >
         <DialogTitle>Login</DialogTitle>
         <DialogContent>
-          {/*<DialogContentText>*/}
-          {/*  To subscribe to this website, please enter your email address here. We will send updates*/}
-          {/*  occasionally.*/}
-          {/*</DialogContentText>*/}
           <TextField
             autoFocus
             required

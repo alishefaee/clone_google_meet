@@ -57,10 +57,6 @@ const Home = ({
     console.log('username2:', username)
   }
 
-  useEffect(() => {
-    console.log('code:', code)
-  }, [code])
-
   function joinMeeting() {
     if (!username) {
       console.log('No username')
@@ -78,9 +74,6 @@ const Home = ({
         return
       }
       console.log('join request send')
-      // setCode(code)
-      // setMeeting(data)
-      // console.log('Meeting joined')
     })
   }
 

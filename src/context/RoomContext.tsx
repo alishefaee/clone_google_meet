@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useReducer } from 'react'
+import React, { createContext, ReactNode, useContext, useReducer, useRef } from 'react'
 import { Message, TParticipant } from '../types'
 
 interface RoomState {
@@ -8,7 +8,10 @@ interface RoomState {
   roomId: string
 }
 
-interface RoomContextProps extends RoomState {}
+interface RoomContextProps extends RoomState {
+  streams: React.MutableRefObject<Map<string, MediaStream>>
+  pcs: React.MutableRefObject<Map<string, RTCPeerConnection>>
+}
 
 const initialState: RoomState = {
   participants: [],
@@ -37,14 +40,14 @@ function roomReducer(state: RoomState, action: Actions): RoomState {
       return {
         ...state,
         participants: state.participants.map((p) =>
-          p.username == action.payload.username ? { ...p, ...action.payload } : p
+          p.username === action.payload.username ? { ...p, ...action.payload } : p
         )
-      } as RoomState
+      }
     }
     case 'REMOVE_PERSON':
       return {
         ...state,
-        participants: state.participants.filter((person) => person !== action.payload)
+        participants: state.participants.filter((person) => person.username !== action.payload)
       }
     case 'ADD_MESSAGE':
       return {
@@ -71,9 +74,7 @@ function roomReducer(state: RoomState, action: Actions): RoomState {
   }
 }
 
-const RoomContext = createContext<RoomContextProps>({
-  ...initialState
-})
+const RoomContext = createContext<RoomContextProps>(null)
 
 const RoomDispatchContext = createContext<React.Dispatch<Actions>>(null)
 
@@ -84,8 +85,12 @@ interface RoomProviderProps {
 export function RoomProvider({ children }: RoomProviderProps) {
   const [state, dispatch] = useReducer(roomReducer, initialState, undefined)
 
+  // Refs for stream and peer connection state
+  const streams = useRef<Map<string, MediaStream>>(new Map())
+  const pcs = useRef<Map<string, RTCPeerConnection>>(new Map())
+
   return (
-    <RoomContext.Provider value={{ ...state }}>
+    <RoomContext.Provider value={{ ...state, streams, pcs }}>
       <RoomDispatchContext.Provider value={dispatch}>{children}</RoomDispatchContext.Provider>
     </RoomContext.Provider>
   )
