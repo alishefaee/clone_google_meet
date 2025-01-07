@@ -13,7 +13,6 @@ import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { DrawerLayoutEnum } from '../../enum/drawer-layout.enum'
-
 export default function Footer({ code, setDrawer, drawer, myUname }) {
   function dialogLayoutHandler(name: DrawerLayoutEnum) {
     if (name === drawer) {
@@ -22,7 +21,6 @@ export default function Footer({ code, setDrawer, drawer, myUname }) {
       setDrawer(name)
     }
   }
-
   return (
     <Stack
       direction="row"

@@ -7,34 +7,28 @@ import CloseIcon from '@mui/icons-material/Close'
 import { socket } from '../socket.ts'
 import { useRoomContext, useRoomDispatch } from '../context/RoomContext'
 import { TParticipant, TSetMeeting } from '../types'
-
 type TJoinReq = {
   username: string
   roomId: string
   sockId: string
 }
-
 const JoinRequest = ({}) => {
   const { roomId } = useRoomContext()
-  const [joinReqs, setJoinReqs] = useState<TJoinReq[]>([])
-
+  const [joinReqs, setJoinReqs] = useState < TJoinReq[] > ([])
   useEffect(() => {
     socket.on('join-req', (data: TJoinReq) => {
       console.log('join-req', data)
       setJoinReqs((pre) => pre.concat(data))
     })
-
     return () => {
       socket.off('join-req')
     }
   }, [])
-
   const handleAdmit = (req: TJoinReq) => {
     // handleOffer(req.username)
     console.log('rooomId:', roomId)
     socket.emit(
-      'join-accept',
-      { roomId, username: req.username, sockId: req.sockId },
+      'join-accept', { roomId, username: req.username, sockId: req.sockId },
       ({ status, msg, data }: TSetMeeting) => {
         console.log('status:', status, msg)
         if (status == 'ERROR') {
@@ -45,12 +39,10 @@ const JoinRequest = ({}) => {
     )
     setJoinReqs((pre) => pre.filter((r) => r.username != req.username))
   }
-
   const handleClose = (req: TJoinReq) => {
     // todo: handle rejection
     setJoinReqs((pre) => pre.filter((r) => r.username != req.username))
   }
-
   const Action = ({ req }) => {
     return (
       <>
@@ -68,7 +60,6 @@ const JoinRequest = ({}) => {
       </>
     )
   }
-
   return (
     <>
       {joinReqs.map((req) => (
@@ -83,5 +74,4 @@ const JoinRequest = ({}) => {
     </>
   )
 }
-
 export default JoinRequest

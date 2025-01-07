@@ -8,14 +8,11 @@ function waitFor(socket: ServerSocket | ClientSocket, event: string) {
     socket.once(event, resolve)
   })
 }
-
 describe('socket io', () => {
   let io: Server
   let serverSocket: ServerSocket
   let clientSocket: ClientSocket
-
   const port = 4000
-
   beforeAll(() => {
     return new Promise((resolve) => {
       const httpServer = createServer()
@@ -29,12 +26,10 @@ describe('socket io', () => {
       })
     })
   })
-
   afterAll(() => {
     io.close()
     clientSocket.disconnect()
   })
-
   // it('on-create-meeting', () => {
   //   return new Promise((resolve) => {
   //     clientSocket.on('hello', (arg) => {
@@ -44,7 +39,6 @@ describe('socket io', () => {
   //     serverSocket.emit('hello', 'world')
   //   })
   // })
-
   // it('should work with an acknowledgement', () => {
   //   return new Promise((resolve) => {
   //     serverSocket.on('hi', (cb) => {

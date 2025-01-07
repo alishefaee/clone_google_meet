@@ -6,7 +6,6 @@ import { DrawerLayoutEnum } from '../enum/drawer-layout.enum'
 import JoinRequest from './components/JoinRequest'
 import { socket } from './socket'
 import { useRoomContext, useRoomDispatch } from './context/RoomContext'
-
 const configuration = {
   iceServers: [
     {
@@ -14,21 +13,17 @@ const configuration = {
     }
   ]
 }
-
 const Meeting = ({ code, localStream, myUname }) => {
   const dispatch = useRoomDispatch()
   const { participants, streams, pcs } = useRoomContext()
   const [drawer, setDrawer] = useState(DrawerLayoutEnum.NONE)
-  const camRef = useRef<HTMLVideoElement | null>(null)
-
+  const camRef = useRef < HTMLVideoElement | null > (null)
   useEffect(() => {
     console.log('fuck:')
   })
-
   useEffect(() => {
     console.log(':::participants', participants)
   }, [participants])
-
   useEffect(() => {
     console.log('fuck2')
     socket.on(
@@ -47,7 +42,6 @@ const Meeting = ({ code, localStream, myUname }) => {
         console.log('pc found:', ptc.username)
         const pc = new RTCPeerConnection(configuration)
         pcs.current.set(ptc.username, pc)
-
         pc.ontrack = (ev) => {
           console.log('Remotee track received', ev)
           const s = new MediaStream()
@@ -63,27 +57,22 @@ const Meeting = ({ code, localStream, myUname }) => {
             }
           })
         }
-
         pc.onicecandidate = (ev) => {
           console.log('IICE candidate sent')
           if (ev.candidate) {
             socket.emit('candidate', { candidate: ev.candidate, roomId })
           }
         }
-
         pc.oniceconnectionstatechange = () => {
           console.log('IICE connection state change', pc.iceConnectionState)
         }
-
         pc.onsignalingstatechange = () => {
           console.log('SSignaling state change', pc.signalingState)
         }
-
         localStream.getTracks().forEach((track) => {
           console.log('AAdding track:', track)
           pc.addTrack(track, localStream)
         })
-
         if (pc.signalingState !== 'stable') {
           console.error(`Cannot handle offer. Current signaling state: ${pc.signalingState}`)
           return
@@ -101,7 +90,6 @@ const Meeting = ({ code, localStream, myUname }) => {
         })
       }
     )
-
     socket.on(
       'answer',
       async ({
@@ -114,7 +102,6 @@ const Meeting = ({ code, localStream, myUname }) => {
         username: string
       }) => {
         console.log('answer received:', caller, participants)
-
         const ptc = participants.find((pc) => pc.username == caller)
         const pc = pcs.current.get(ptc.username)
         console.log('state:', pc.signalingState)
@@ -125,24 +112,20 @@ const Meeting = ({ code, localStream, myUname }) => {
           )
           return
         }
-
         const remoteDesc = new RTCSessionDescription(answer)
         await pc.setRemoteDescription(remoteDesc)
       }
     )
-
     return () => {
       socket.off('offer')
       socket.off('answer')
     }
   }, [participants])
-
   useEffect(() => {
     if (localStream && camRef.current) {
       camRef.current!.srcObject = localStream
     }
   }, [localStream])
-
   return (
     <Box>
       <Stack direction="row">
@@ -166,15 +149,13 @@ const Meeting = ({ code, localStream, myUname }) => {
     </Box>
   )
 }
-
 const ParticipantVideo = ({ stream, username }) => {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const videoRef = useRef < HTMLVideoElement > (null)
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream
     }
   }, [stream])
-
   return (
     <div>
       <p>{username}</p>

@@ -3,7 +3,6 @@ import Drawer from '@mui/material/Drawer'
 import PeopleLayout from './PeopleLayout.tsx'
 import ChatLayout from './ChatLayout.tsx'
 import { DrawerLayoutEnum } from '../../enum/drawer-layout.enum'
-
 export default function AnchorTemporaryDrawer({ drawer }) {
   return (
     <Drawer anchor="right" open={drawer != DrawerLayoutEnum.NONE}>

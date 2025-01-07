@@ -7,7 +7,6 @@ import { useRoomContext, useRoomDispatch } from './context/RoomContext'
 import { TMeeting, TParticipant } from './types'
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
 import Button from '@mui/material/Button'
-
 const configuration = {
   iceServers: [
     {
@@ -24,9 +23,7 @@ function App() {
   const [myUname, setMyUname] = useState('')
   const [code, setCode] = useState('')
   const [isConnected, setIsConnected] = useState(socket.connected)
-
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null)
-
+  const [localStream, setLocalStream] = useState < MediaStream | null > (null)
   useEffect(() => {
     setupLocalStream()
     socket.on('connect', onConnect)
@@ -35,7 +32,6 @@ function App() {
       dispatch({ type: 'SET_PARTICIPANTS', payload: meeting.participants })
       dispatch({ type: 'SET_CREATOR', payload: meeting.creator })
     })
-
     return () => {
       socket.off('init-meeting')
       socket.off('participant-new')
@@ -43,13 +39,11 @@ function App() {
       socket.off('disconnect', onDisconnect)
     }
   }, [])
-
   useEffect(() => {
     socket.on('participant-new', async (data: TParticipant) => {
       console.log('participant-new', data)
       await handleOffer(data)
     })
-
     socket.on(
       'candidate',
       async ({
@@ -71,14 +65,12 @@ function App() {
       socket.off('participant-new')
     }
   }, [roomId, participants])
-
   useEffect(() => {
     if (localStream) {
       const track = localStream.getAudioTracks()[0]
       track.enabled = isAudioEnabled
     }
   }, [isAudioEnabled])
-
   useEffect(() => {
     if (localStream) {
       const track = localStream.getVideoTracks()[0]
@@ -95,21 +87,17 @@ function App() {
     console.log('Disconnected from server')
     setIsConnected(false)
   }
-
   async function handleOffer(data: TParticipant) {
     const pc = new RTCPeerConnection(configuration)
     pcs.current.set(data.username, pc)
-    console.log('pc set:', data.username)
     localStream.getTracks().forEach((track) => {
-      console.log('AAdding track:', track)
+      console.log('caller - add local track:', track)
       pc.addTrack(track, localStream)
     })
-
     pc.ontrack = (ev) => {
-      console.log('Remote track received', ev)
+      console.log('caller - Remote track received', ev)
       const newStream = new MediaStream()
       newStream.addTrack(ev.track)
-      console.log('getVideoTracks( ) caller:', newStream.getAudioTracks())
       dispatch({
         type: 'EDIT_PARTICIPANT',
         payload: {
@@ -120,12 +108,10 @@ function App() {
       })
       streams.current.set(data.username, newStream)
     }
-
     pc.onicecandidate = (ev) => {
-      console.log('pc.onicecandidate')
+      console.log('caller - on ice candidate')
       if (ev.candidate) {
-        socket.emit(
-          'candidate',
+        socket.emit('candidate',
           {
             candidate: ev.candidate,
             roomId
@@ -136,11 +122,9 @@ function App() {
         )
       }
     }
-
     pc.oniceconnectionstatechange = () => {
       console.log('ICE connection state change', pc.iceConnectionState)
     }
-
     pc.onsignalingstatechange = () => {
       console.log('Signaling state change', pc.signalingState)
     }
@@ -148,7 +132,6 @@ function App() {
       type: 'ADD_PARTICIPANT',
       payload: data
     })
-
     const offer = await pc.createOffer({
       offerToReceiveAudio: true,
       offerToReceiveVideo: true
@@ -163,16 +146,15 @@ function App() {
   function setupLocalStream() {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
-      .then(function (stream) {
+      .then(function(stream) {
         setLocalStream(stream)
         setIsAudioEnabled(stream.getAudioTracks()[0].enabled)
         console.log('getUserMedia')
       })
-      .catch(function (err) {
+      .catch(function(err) {
         console.log('Something went wrong!')
       })
   }
-
   if (!myUname) {
     return (
       <Dialog
@@ -192,27 +174,26 @@ function App() {
           } as any
         }
       >
-        <DialogTitle>Login</DialogTitle>
-        <DialogContent>
-          <TextField
+        <DialogTitle>Login</DialogTitle> <
+      DialogContent >
+      <TextField
             autoFocus
             required
-            margin="dense"
-            id="username"
-            name="username"
-            label="Username"
-            type="text"
+            margin='dense'
+            id='username'
+            name='username'
+            label='Username'
+            type='text'
             fullWidth
-            variant="standard"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button type="submit">Save</Button>
-        </DialogActions>
-      </Dialog>
+            variant='standard'
+          /> <
+      /DialogContent> <
+      DialogActions >
+      <Button type='submit'>Save</Button> <
+      /DialogActions> < /
+      Dialog >
     )
   }
-
   return (
     <>
       {creator ? (
@@ -232,5 +213,4 @@ function App() {
     </>
   )
 }
-
 export default App

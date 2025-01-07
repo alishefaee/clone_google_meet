@@ -1,33 +1,28 @@
 import React, { createContext, ReactNode, useContext, useReducer, useRef } from 'react'
 import { Message, TParticipant } from '../types'
-
 interface RoomState {
   participants: TParticipant[]
   creator: string
   messages: Message[]
   roomId: string
 }
-
 interface RoomContextProps extends RoomState {
-  streams: React.MutableRefObject<Map<string, MediaStream>>
-  pcs: React.MutableRefObject<Map<string, RTCPeerConnection>>
+  streams: React.MutableRefObject < Map < string,
+  MediaStream >>
+  pcs: React.MutableRefObject < Map < string,
+  RTCPeerConnection >>
 }
-
 const initialState: RoomState = {
   participants: [],
   creator: '',
   messages: [],
   roomId: ''
 }
-
-type Actions =
-  | { type: 'ADD_PARTICIPANT'; payload: TParticipant }
-  | { type: 'EDIT_PARTICIPANT'; payload: Partial<TParticipant> & { username: string } }
-  | { type: 'REMOVE_PERSON'; payload: string }
-  | { type: 'ADD_MESSAGE'; payload: Message }
-  | { type: 'SET_ROOM'; payload: string }
-  | { type: 'SET_PARTICIPANTS'; payload: TParticipant[] }
-  | { type: 'SET_CREATOR'; payload: string }
+type Actions = | { type: 'ADD_PARTICIPANT';payload: TParticipant } |
+{ type: 'EDIT_PARTICIPANT';payload: Partial < TParticipant > & { username: string } } |
+{ type: 'REMOVE_PERSON';payload: string } | { type: 'ADD_MESSAGE';payload: Message } |
+{ type: 'SET_ROOM';payload: string } | { type: 'SET_PARTICIPANTS';payload: TParticipant[] } |
+{ type: 'SET_CREATOR';payload: string }
 
 function roomReducer(state: RoomState, action: Actions): RoomState {
   switch (action.type) {
@@ -73,33 +68,27 @@ function roomReducer(state: RoomState, action: Actions): RoomState {
       return state
   }
 }
-
-const RoomContext = createContext<RoomContextProps>(null)
-
-const RoomDispatchContext = createContext<React.Dispatch<Actions>>(null)
-
+const RoomContext = createContext < RoomContextProps > (null)
+const RoomDispatchContext = createContext < React.Dispatch < Actions >> (null)
 interface RoomProviderProps {
   children: ReactNode
 }
-
 export function RoomProvider({ children }: RoomProviderProps) {
   const [state, dispatch] = useReducer(roomReducer, initialState, undefined)
-
   // Refs for stream and peer connection state
-  const streams = useRef<Map<string, MediaStream>>(new Map())
-  const pcs = useRef<Map<string, RTCPeerConnection>>(new Map())
-
+  const streams = useRef < Map < string,
+    MediaStream >> (new Map())
+  const pcs = useRef < Map < string,
+    RTCPeerConnection >> (new Map())
   return (
     <RoomContext.Provider value={{ ...state, streams, pcs }}>
       <RoomDispatchContext.Provider value={dispatch}>{children}</RoomDispatchContext.Provider>
     </RoomContext.Provider>
   )
 }
-
 export const useRoomContext = () => {
   return useContext(RoomContext)
 }
-
 export function useRoomDispatch() {
   return useContext(RoomDispatchContext)
 }

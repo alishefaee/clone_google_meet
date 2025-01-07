@@ -4,7 +4,6 @@ import { Divider, List, ListItem, Stack, TextField } from '@mui/material'
 import Box from '@mui/material/Box'
 import SendIcon from '@mui/icons-material/Send'
 import { socket } from '../socket.ts'
-
 const ChatLayout = () => {
   // const {messages} = useRoomContext()
   const [msg, setMsg] = useState('')
@@ -22,7 +21,6 @@ const ChatLayout = () => {
       sendMessageHandler()
     }
   }
-
   return (
     <Box
       sx={{
@@ -94,5 +92,4 @@ const ChatLayout = () => {
     </Box>
   )
 }
-
 export default ChatLayout

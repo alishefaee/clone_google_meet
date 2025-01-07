@@ -1,16 +1,13 @@
 import http from 'http'
 import { socketServer } from './init/socket'
-
 import { app } from './init/app'
 const server = http.createServer(app)
 const port = 4000
 console.log('Create IO')
 const io = socketServer(server)
-
 server.listen(port)
 server.on('error', onError)
 server.on('listening', onListening)
-
 /**
  * Event listener for HTTP server "error" event.
  */
@@ -18,9 +15,7 @@ function onError(error: any) {
   if (error.syscall !== 'listen') {
     throw error
   }
-
   const bind = 'Port ' + port
-
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
@@ -35,7 +30,6 @@ function onError(error: any) {
       throw error
   }
 }
-
 /**
  * Event listener for HTTP server "listening" event.
  */
@@ -44,5 +38,4 @@ function onListening() {
   const bind = typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr?.port
   console.log('listening on ' + bind)
 }
-
 export { server, io }

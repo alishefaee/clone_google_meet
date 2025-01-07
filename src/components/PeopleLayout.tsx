@@ -6,7 +6,6 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import MicIcon from '@mui/icons-material/Mic'
 import { useRoomContext } from '../context/RoomContext'
-
 const PeopleLayout = () => {
   const { participants } = useRoomContext()
   return (
@@ -27,5 +26,4 @@ const PeopleLayout = () => {
     </Box>
   )
 }
-
 export default PeopleLayout
