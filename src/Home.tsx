@@ -6,13 +6,12 @@ import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { socket, updateAuthToken } from './socket.ts'
 import { TSetMeeting } from './types'
-import { useRoomContext, useRoomDispatch } from './context/RoomContext'
+import { useRoomDispatch } from './context/RoomContext'
 
 const Home = ({
   setCode,
   code,
-  setUsername,
-  username,
+  myUname,
   isAudioEnabled,
   setIsAudioEnabled,
   isVideoEnabled,
@@ -27,17 +26,17 @@ const Home = ({
       camRef.current!.srcObject = localStream
     }
   }, [localStream])
+
   function setNewMeeting() {
     const id = Math.floor(Math.random() * 100000000).toString()
-    console.log('id:', id, username)
-    if (!username) {
-      console.log('No username')
+    if (!myUname) {
+      console.log('No myUname')
       return
     }
-    updateAuthToken(username)
+    updateAuthToken(myUname)
 
     dispatch({ type: 'SET_ROOM', payload: id })
-    console.log('username:', username)
+    console.log('myUname:', myUname)
     socket.emit(
       'create-meeting',
       { id, aud: isAudioEnabled, vid: isVideoEnabled },
@@ -54,16 +53,16 @@ const Home = ({
         console.log('Meeting created')
       }
     )
-    console.log('username2:', username)
+    console.log('myUname2:', myUname)
   }
 
   function joinMeeting() {
-    if (!username) {
-      console.log('No username')
+    if (!myUname) {
+      console.log('No myUname')
       return
     }
     console.log('log1')
-    updateAuthToken(username)
+    updateAuthToken(myUname)
     // socket.connect()
     dispatch({ type: 'SET_ROOM', payload: code })
     console.log('log2', code)

@@ -21,7 +21,7 @@ function App() {
   const dispatch = useRoomDispatch()
   const [isAudioEnabled, setIsAudioEnabled] = useState(true)
   const [isVideoEnabled, setIsVideoEnabled] = useState(true)
-  const [username, setUsername] = useState('')
+  const [myUname, setMyUname] = useState('')
   const [code, setCode] = useState('')
   const [isConnected, setIsConnected] = useState(socket.connected)
 
@@ -173,11 +173,10 @@ function App() {
       })
   }
 
-  if (!username) {
+  if (!myUname) {
     return (
       <Dialog
-        open={!username}
-        // onClose={handleClose}
+        open={!myUname}
         PaperProps={
           {
             component: 'form',
@@ -186,7 +185,7 @@ function App() {
               const formData = new FormData(event.currentTarget)
               const formJson = (Object as any).fromEntries(formData.entries())
               console.log(formJson.username)
-              setUsername(formJson.username)
+              setMyUname(formJson.username)
               updateAuthToken(formJson.username)
               socket.connect()
             }
@@ -217,7 +216,7 @@ function App() {
   return (
     <>
       {creator ? (
-        <Meeting localStream={localStream} code={code} username={username} />
+        <Meeting localStream={localStream} code={code} myUname={myUname} />
       ) : (
         <Home
           isAudioEnabled={isAudioEnabled}
@@ -226,8 +225,7 @@ function App() {
           setIsVideoEnabled={setIsVideoEnabled}
           setCode={setCode}
           code={code}
-          setUsername={setUsername}
-          username={username}
+          myUname={myUname}
           localStream={localStream}
         />
       )}

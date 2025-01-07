@@ -15,7 +15,7 @@ const configuration = {
   ]
 }
 
-const Meeting = ({ code, localStream, username }) => {
+const Meeting = ({ code, localStream, myUname }) => {
   const dispatch = useRoomDispatch()
   const { participants, streams, pcs } = useRoomContext()
   const [drawer, setDrawer] = useState(DrawerLayoutEnum.NONE)
@@ -148,7 +148,7 @@ const Meeting = ({ code, localStream, username }) => {
       <Stack direction="row">
         <video ref={camRef} autoPlay></video>
         {participants
-          .filter((p) => p.username != username)
+          .filter((p) => p.username != myUname)
           .map((ptc) => {
             console.log('kkk:', streams.current.get(ptc.username))
             return (
@@ -160,9 +160,9 @@ const Meeting = ({ code, localStream, username }) => {
             )
           })}
       </Stack>
-      <JoinRequest username={username} />
+      <JoinRequest />
       <Drawer drawer={drawer} />
-      <Footer code={code} drawer={drawer} setDrawer={setDrawer} username={username} />
+      <Footer code={code} drawer={drawer} setDrawer={setDrawer} myUname={myUname} />
     </Box>
   )
 }
@@ -170,7 +170,6 @@ const Meeting = ({ code, localStream, username }) => {
 const ParticipantVideo = ({ stream, username }) => {
   const videoRef = useRef<HTMLVideoElement>(null)
   useEffect(() => {
-    console.log('sssssssssS:', stream)
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream
     }

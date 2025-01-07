@@ -14,8 +14,7 @@ type TJoinReq = {
   sockId: string
 }
 
-const JoinRequest = ({ username }) => {
-  const dispatch = useRoomDispatch()
+const JoinRequest = ({}) => {
   const { roomId } = useRoomContext()
   const [joinReqs, setJoinReqs] = useState<TJoinReq[]>([])
 
