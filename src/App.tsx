@@ -44,22 +44,14 @@ function App() {
       console.log('participant-new', data)
       await handleOffer(data)
     })
-    socket.on(
-      'candidate',
-      async ({
-        candidate,
-        username: caller
-      }: {
-        candidate: RTCIceCandidateInit
-        username: string
-      }) => {
-        console.log('ICE candidate received', candidate, caller, participants)
-        const ptc = participants.find((p) => p.username == caller)
-        console.log('ptc:', ptc, pcs.current.get(ptc.username))
-        console.log('pc get:', ptc.username, pcs.current.get(ptc.username))
-        await pcs.current.get(ptc.username).addIceCandidate(candidate)
-      }
-    )
+    socket.on('candidate', async ({ candidate, username: caller }: {
+      candidate: RTCIceCandidateInit
+      username: string
+    }) => {
+      console.log('ICE candidate received', candidate, caller, participants)
+      const ptc = participants.find((p) => p.username == caller)
+      await pcs.current.get(ptc.username).addIceCandidate(candidate)
+    })
     return () => {
       socket.off('candidate')
       socket.off('participant-new')
@@ -111,19 +103,13 @@ function App() {
     pc.onicecandidate = (ev) => {
       console.log('caller - on ice candidate')
       if (ev.candidate) {
-        socket.emit('candidate',
-          {
-            candidate: ev.candidate,
-            roomId
-          },
-          () => {
-            console.log('ICE candidate sent', ev.candidate)
-          }
-        )
+        socket.emit('candidate', { candidate: ev.candidate, roomId }, () => {
+          console.log('ICE sent', ev.candidate)
+        })
       }
     }
     pc.oniceconnectionstatechange = () => {
-      console.log('ICE connection state change', pc.iceConnectionState)
+      console.log('caller - ICE state change', pc.iceConnectionState)
     }
     pc.onsignalingstatechange = () => {
       console.log('Signaling state change', pc.signalingState)
@@ -137,9 +123,8 @@ function App() {
       offerToReceiveVideo: true
     })
     await pc.setLocalDescription(offer)
-    console.log('roomId::', roomId)
     socket.emit('offer', { offer, targetUsername: data.username, roomId }, () => {
-      console.log('offer processed')
+      console.log('offer sent')
     })
   }
 
@@ -149,7 +134,7 @@ function App() {
       .then(function(stream) {
         setLocalStream(stream)
         setIsAudioEnabled(stream.getAudioTracks()[0].enabled)
-        console.log('getUserMedia')
+        console.log('Local stream set')
       })
       .catch(function(err) {
         console.log('Something went wrong!')
@@ -190,8 +175,8 @@ function App() {
       /DialogContent> <
       DialogActions >
       <Button type='submit'>Save</Button> <
-      /DialogActions> < /
-      Dialog >
+      /DialogActions> <
+      /Dialog>
     )
   }
   return (

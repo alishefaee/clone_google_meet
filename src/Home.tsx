@@ -33,11 +33,9 @@ const Home = ({
     }
     updateAuthToken(myUname)
     dispatch({ type: 'SET_ROOM', payload: id })
-    console.log('myUname:', myUname)
     socket.emit(
       'create-meeting', { id, aud: isAudioEnabled, vid: isVideoEnabled },
       ({ status, msg, data }: TSetMeeting) => {
-        console.log('status:', status)
         if (status == 'ERROR') {
           console.log('error', msg)
           return
@@ -45,11 +43,9 @@ const Home = ({
         setCode(id)
         dispatch({ type: 'SET_PARTICIPANTS', payload: data.participants })
         dispatch({ type: 'SET_CREATOR', payload: data.creator })
-        console.log('dispatch creator')
         console.log('Meeting created')
       }
     )
-    console.log('myUname2:', myUname)
   }
 
   function joinMeeting() {
@@ -57,45 +53,41 @@ const Home = ({
       console.log('No myUname')
       return
     }
-    console.log('log1')
     updateAuthToken(myUname)
-    // socket.connect()
     dispatch({ type: 'SET_ROOM', payload: code })
-    console.log('log2', code)
     socket.emit('join-meeting-req', { roomId: code }, ({ status, msg, data }: TSetMeeting) => {
-      console.log('status:', status)
       if (status == 'ERROR') {
         console.log('error', msg)
         return
       }
-      console.log('join request send')
+      console.log('join request sent')
     })
   }
   return (
     <Stack
       spacing={2}
-      direction="row"
-      justifyContent="center"
+      direction='row'
+      justifyContent='center'
       sx={{ height: '100%' }}
-      alignItems="center"
+      alignItems='center'
     >
       <Stack spacing={1}>
-        <Button size="small" variant="contained" onClick={setNewMeeting}>
+        <Button size='small' variant='contained' onClick={setNewMeeting}>
           New Meeting
         </Button>
         <Divider>OR</Divider>
         <TextField
-          placeholder="Enter code"
-          label="code"
-          size="small"
+          placeholder='Enter code'
+          label='code'
+          size='small'
           onChange={(e) => setCode(e.target.value)}
         />
-        <Button size="small" variant="outlined" onClick={joinMeeting}>
+        <Button size='small' variant='outlined' onClick={joinMeeting}>
           Join
         </Button>
       </Stack>
       <Stack>
-        <Stack spacing={2} direction="row">
+        <Stack spacing={2} direction='row'>
           {isAudioEnabled ? (
             <IconButton
               onClick={() => {
