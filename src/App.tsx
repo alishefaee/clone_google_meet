@@ -7,6 +7,7 @@ import { useRoomContext, useRoomDispatch } from './context/RoomContext'
 import { TMeeting, TParticipant } from './types'
 import { Dialog, DialogActions, DialogContent, DialogTitle, TextField } from '@mui/material'
 import Button from '@mui/material/Button'
+
 const configuration = {
   iceServers: [
     {
@@ -23,7 +24,7 @@ function App() {
   const [myUname, setMyUname] = useState('')
   const [code, setCode] = useState('')
   const [isConnected, setIsConnected] = useState(socket.connected)
-  const [localStream, setLocalStream] = useState < MediaStream | null > (null)
+  const [localStream, setLocalStream] = useState<MediaStream | null>(null)
   useEffect(() => {
     setupLocalStream()
     socket.on('connect', onConnect)
@@ -44,14 +45,14 @@ function App() {
       console.log('participant-new', data)
       await handleOffer(data)
     })
-    socket.on('candidate', async ({ candidate, sender }: {
-      candidate: RTCIceCandidateInit
-      sender: string
-    }) => {
-      console.log('ICE candidate received', candidate, sender)
-      const ptc = participants.find((p) => p.username == sender)
-      await pcs.current.get(ptc.username).addIceCandidate(candidate)
-    })
+    socket.on(
+      'candidate',
+      async ({ candidate, sender }: { candidate: RTCIceCandidateInit; sender: string }) => {
+        console.log('ICE candidate received', candidate, sender)
+        const ptc = participants.find((p) => p.username == sender)
+        await pcs.current.get(ptc.username).addIceCandidate(candidate)
+      }
+    )
     return () => {
       socket.off('candidate')
       socket.off('participant-new')
@@ -79,6 +80,7 @@ function App() {
     console.log('Disconnected from server')
     setIsConnected(false)
   }
+
   async function handleOffer(data: TParticipant) {
     const pc = new RTCPeerConnection(configuration)
     pcs.current.set(data.username, pc)
@@ -131,15 +133,16 @@ function App() {
   function setupLocalStream() {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
-      .then(function(stream) {
+      .then(function (stream) {
         setLocalStream(stream)
         setIsAudioEnabled(stream.getAudioTracks()[0].enabled)
         console.log('Local stream set')
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.log('Something went wrong!')
       })
   }
+
   if (!myUname) {
     return (
       <Dialog
@@ -159,24 +162,24 @@ function App() {
           } as any
         }
       >
-        <DialogTitle>Login</DialogTitle> <
-      DialogContent >
-      <TextField
-          autoFocus
-          required
-          margin='dense'
-          id='username'
-          name='username'
-          label='Username'
-          type='text'
-          fullWidth
-          variant='standard'
-        /> <
-      /DialogContent> <
-      DialogActions >
-      <Button type='submit'>Save</Button> <
-      /DialogActions> < /
-      Dialog >
+        <DialogTitle>Login</DialogTitle>{' '}
+        <DialogContent>
+          <TextField
+            autoFocus
+            required
+            margin="dense"
+            id="username"
+            name="username"
+            label="Username"
+            type="text"
+            fullWidth
+            variant="standard"
+          />{' '}
+        </DialogContent>{' '}
+        <DialogActions>
+          <Button type="submit">Save</Button>{' '}
+        </DialogActions>{' '}
+      </Dialog>
     )
   }
   return (
@@ -198,4 +201,5 @@ function App() {
     </>
   )
 }
+
 export default App
