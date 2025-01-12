@@ -44,12 +44,12 @@ function App() {
       console.log('participant-new', data)
       await handleOffer(data)
     })
-    socket.on('candidate', async ({ candidate, username: caller }: {
+    socket.on('candidate', async ({ candidate, sender }: {
       candidate: RTCIceCandidateInit
-      username: string
+      sender: string
     }) => {
-      console.log('ICE candidate received', candidate, caller, participants)
-      const ptc = participants.find((p) => p.username == caller)
+      console.log('ICE candidate received', candidate, sender)
+      const ptc = participants.find((p) => p.username == sender)
       await pcs.current.get(ptc.username).addIceCandidate(candidate)
     })
     return () => {
@@ -123,7 +123,7 @@ function App() {
       offerToReceiveVideo: true
     })
     await pc.setLocalDescription(offer)
-    socket.emit('offer', { offer, targetUsername: data.username, roomId }, () => {
+    socket.emit('offer', { offer, callee: data.username, roomId }, () => {
       console.log('offer sent')
     })
   }
@@ -162,21 +162,21 @@ function App() {
         <DialogTitle>Login</DialogTitle> <
       DialogContent >
       <TextField
-            autoFocus
-            required
-            margin='dense'
-            id='username'
-            name='username'
-            label='Username'
-            type='text'
-            fullWidth
-            variant='standard'
-          /> <
+          autoFocus
+          required
+          margin='dense'
+          id='username'
+          name='username'
+          label='Username'
+          type='text'
+          fullWidth
+          variant='standard'
+        /> <
       /DialogContent> <
       DialogActions >
       <Button type='submit'>Save</Button> <
-      /DialogActions> <
-      /Dialog>
+      /DialogActions> < /
+      Dialog >
     )
   }
   return (

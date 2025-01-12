@@ -19,10 +19,10 @@ const Meeting = ({ code, localStream, myUname }) => {
   const [drawer, setDrawer] = useState(DrawerLayoutEnum.NONE)
   const camRef = useRef < HTMLVideoElement | null > (null)
   useEffect(() => {
-    socket.on('offer', async ({ offer, roomId, username: caller }: {
+    socket.on('offer', async ({ offer, roomId, caller }: {
       offer: RTCSessionDescriptionInit
       roomId: string
-      username: string
+      caller: string
     }) => {
       console.log('Offer received', roomId, caller)
       const ptc = participants.find((p) => p.username == caller)
@@ -70,17 +70,17 @@ const Meeting = ({ code, localStream, myUname }) => {
       }
       const answer = await pc.createAnswer()
       await pc.setLocalDescription(answer)
-      socket.emit('answer', { answer, roomId, username: caller }, () => {
+      socket.emit('answer', { answer, roomId, caller }, () => {
         console.log('answer processed')
       })
     })
-    socket.on('answer', async ({ answer, roomId, username: caller }: {
+    socket.on('answer', async ({ answer, roomId, callee }: {
       answer: RTCSessionDescriptionInit
       roomId: string
       username: string
     }) => {
-      console.log('answer received:', caller, participants)
-      const ptc = participants.find((pc) => pc.username == caller)
+      console.log('answer received:', callee, participants)
+      const ptc = participants.find((pc) => pc.username == callee)
       const pc = pcs.current.get(ptc.username)
       console.log('state:', pc.signalingState)
       if (pc.signalingState !== 'have-local-offer') {

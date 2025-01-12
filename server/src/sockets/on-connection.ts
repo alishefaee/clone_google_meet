@@ -11,37 +11,36 @@ export function onConnection(io: Server) {
         fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
         return
       }
-      const username = socket.handshake.auth.username
-      const user = meeting.participants.find((ptc) => ptc.username == username) !
+      const sender = socket.handshake.auth.username
+      const user = meeting.participants.find((ptc) => ptc.username == sender) !
         console.log('Candidate received:', candidate)
-      socket.to(roomId).except(user.sockId).emit('candidate', { candidate, username })
+      socket.to(roomId).except(user.sockId).emit('candidate', { candidate, sender })
     })
-    socket.on('offer', ({ offer, roomId, targetUsername }, fn: Function) => {
-      console.log('Offer received:', targetUsername)
+    socket.on('offer', ({ offer, roomId, callee }, fn: Function) => {
+      console.log('Offer received:', callee)
       const meeting = Cache.get < TMeeting > (roomId)
       console.log('meeting found:', roomId, meeting)
       if (!meeting) {
         fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
         return
       }
-      const targetUser = meeting.participants.find((ptc) => ptc.username == targetUsername) !
-        console.log('target user found:', targetUser)
-      const targetSocket = io.sockets.sockets.get(targetUser.sockId)
-      if (!targetSocket) {
+      const calleeUser = meeting.participants.find((ptc) => ptc.username == callee) !
+        console.log('target user found:', calleeUser)
+      const calleeSocket = io.sockets.sockets.get(calleeUser.sockId)
+      if (!calleeSocket) {
         fn({ status: 'ERROR', mgs: 'No socket found', data: {} })
         return
       }
-      console.log('target socket found')
-      targetSocket.emit('offer', {
+      console.log('callee socket found')
+      calleeSocket.emit('offer', {
           offer,
           roomId,
-          username: socket.handshake.auth.username
+          caller: socket.handshake.auth.username
         }
         as any)
       fn({ status: 'SUCCESS', mgs: 'join request sent', data: {} })
-      // socket.to(meetingId).emit('offer', { offer, meetingId })
     })
-    socket.on('answer', ({ answer, roomId, username }, fn: Function) => {
+    socket.on('answer', ({ answer, roomId, caller }, fn: Function) => {
       console.log('Answer received:', answer)
       const meeting = Cache.get < TMeeting > (roomId)
       console.log('meeting:', roomId)
@@ -49,20 +48,20 @@ export function onConnection(io: Server) {
         fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
         return
       }
-      const targetUser = meeting.participants.find((ptc) => ptc.username == username) !
-        const targetSocket = io.sockets.sockets.get(targetUser.sockId)
-      if (!targetSocket) {
+      const callerUser = meeting.participants.find((ptc) => ptc.username == caller) !
+        const callerSocket = io.sockets.sockets.get(callerUser.sockId)
+      if (!callerSocket) {
         fn({ status: 'ERROR', mgs: 'No socket found', data: {} })
         return
       }
-      targetSocket.emit('answer', {
+      callerSocket.emit('answer', {
           answer,
           roomId,
-          username: socket.handshake.auth.username
+          callee: socket.handshake.auth.username
         }
         as any)
     })
-    socket.on('join-accept', ({ roomId, username, sockId }, fn: Function) => {
+    socket.on('join-accept', ({ roomId, caller, sockId }, fn: Function) => {
       console.log('join meeting accepted')
       const meeting = Cache.get < TMeeting > (roomId)
       console.log('meeting:', meeting)
@@ -70,13 +69,8 @@ export function onConnection(io: Server) {
         fn({ status: 'ERROR', mgs: 'No meeting found', data: {} })
         return
       }
-      // const caller = meeting.participants.find((pc) => pc.username == username)
-      // if (!caller) {
-      //   fn({ status: 'ERROR', mgs: 'No caller found', data: {} })
-      //   return
-      // }
       const newPtc = {
-        username,
+        username: caller,
         sockId,
         vid: false,
         aud: false
@@ -133,7 +127,7 @@ export function onConnection(io: Server) {
       const creator = meeting.participants.find((ptc) => ptc.username == meeting.creator) !
         socket.to(creator.sockId).emit('join-req', {
           roomId,
-          username: socket.handshake.auth.username,
+          caller: socket.handshake.auth.username,
           sockId: socket.id
         })
       fn({ status: 'SUCCESS', mgs: 'join request sent', data: {} })
