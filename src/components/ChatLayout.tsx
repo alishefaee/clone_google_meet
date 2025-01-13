@@ -4,12 +4,14 @@ import { Divider, List, ListItem, Stack, TextField } from '@mui/material'
 import Box from '@mui/material/Box'
 import SendIcon from '@mui/icons-material/Send'
 import { socket } from '../socket.ts'
+import { useRoomContext } from '../context/RoomContext'
+
 const ChatLayout = () => {
-  // const {messages} = useRoomContext()
+  const { messages, roomId } = useRoomContext()
   const [msg, setMsg] = useState('')
 
   function sendMessageHandler() {
-    socket.emit('s:msg:new', { message: msg }, () => {
+    socket.emit('msg-new', { msg, roomId }, () => {
       console.log('message send:', msg)
       setMsg('')
     })
@@ -21,6 +23,7 @@ const ChatLayout = () => {
       sendMessageHandler()
     }
   }
+
   return (
     <Box
       sx={{
@@ -34,20 +37,22 @@ const ChatLayout = () => {
       <Typography variant="h6">Chat</Typography>
       <Divider />
       <List sx={{ flexGrow: 1 }}>
-        {/*{messages.map(({username, time, content}) => (*/}
-        {/*    <ListItem key={time}>*/}
-        {/*        <Stack>*/}
-        {/*            <Stack direction='row' spacing={1} sx={{width: '100%'}}>*/}
-        {/*                <Typography>{content}</Typography>*/}
-        {/*                <Typography>{new Date(time).toLocaleTimeString('en-GB', {*/}
-        {/*                    hour: '2-digit',*/}
-        {/*                    minute: '2-digit',*/}
-        {/*                    hour12: false*/}
-        {/*                })}</Typography>*/}
-        {/*            </Stack>*/}
-        {/*        </Stack>*/}
-        {/*    </ListItem>*/}
-        {/*))}*/}
+        {messages.map(({ username, time, content }) => (
+          <ListItem key={time}>
+            <Stack>
+              <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
+                <Typography>{content}</Typography>
+                <Typography>
+                  {new Date(time).toLocaleTimeString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                  })}
+                </Typography>
+              </Stack>
+            </Stack>
+          </ListItem>
+        ))}
       </List>
       <List>
         <ListItem sx={{ p: 0 }}>
@@ -57,8 +62,8 @@ const ChatLayout = () => {
             sx={{
               p: 1,
               borderRadius: '20px 20px 20px 20px',
-              textAlign: 'center',
-              bgcolor: '#F1F3F4'
+              textAlign: 'center'
+              // bgcolor: '#F1F3F4'
             }}
           >
             <TextField

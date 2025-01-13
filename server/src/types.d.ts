@@ -1,8 +1,8 @@
 import { Socket } from 'socket.io'
 export type TSocket = Socket & {
-  username ? : string
+  username?: string
 }
 export type TMeeting = {
   creator: string
-  participants: { username: string;sockId: string;vid: boolean;aud: boolean } []
+  participants: { username: string; sockId: string; vid: boolean; aud: boolean }[]
 }

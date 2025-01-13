@@ -131,6 +131,17 @@ export function onConnection(io: Server) {
       })
       fn({ status: 'SUCCESS', mgs: 'join request sent', data: {} })
     })
+
+    socket.on('msg-new', ({ msg, roomId }, fn: Function) => {
+      console.log('on message:', msg, roomId)
+      io.to(roomId).emit('msg-new', {
+        username: socket.handshake.auth.username,
+        msg,
+        date: new Date()
+      })
+      fn()
+    })
+
     socket.on('disconnect', (data: any, fn: Function) => {
       console.log('Client disconnected:', socket.id)
     })

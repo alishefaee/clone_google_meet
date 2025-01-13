@@ -18,7 +18,7 @@ const Home = ({
   localStream
 }) => {
   const dispatch = useRoomDispatch()
-  const camRef = useRef < HTMLVideoElement | null > (null)
+  const camRef = useRef<HTMLVideoElement | null>(null)
   useEffect(() => {
     if (localStream && camRef.current) {
       camRef.current!.srcObject = localStream
@@ -34,7 +34,8 @@ const Home = ({
     updateAuthToken(myUname)
     dispatch({ type: 'SET_ROOM', payload: id })
     socket.emit(
-      'create-meeting', { id, aud: isAudioEnabled, vid: isVideoEnabled },
+      'create-meeting',
+      { id, aud: isAudioEnabled, vid: isVideoEnabled },
       ({ status, msg, data }: TSetMeeting) => {
         if (status == 'ERROR') {
           console.log('error', msg)
@@ -64,30 +65,19 @@ const Home = ({
     })
   }
   return (
-    <Stack
-      spacing={2}
-      direction='row'
-      justifyContent='center'
-      sx={{ height: '100%' }}
-      alignItems='center'
-    >
+    <Stack spacing={2} direction="row" justifyContent="center" sx={{ height: '100%' }} alignItems="center">
       <Stack spacing={1}>
-        <Button size='small' variant='contained' onClick={setNewMeeting}>
+        <Button size="small" variant="contained" onClick={setNewMeeting}>
           New Meeting
         </Button>
         <Divider>OR</Divider>
-        <TextField
-          placeholder='Enter code'
-          label='code'
-          size='small'
-          onChange={(e) => setCode(e.target.value)}
-        />
-        <Button size='small' variant='outlined' onClick={joinMeeting}>
+        <TextField placeholder="Enter code" label="code" size="small" onChange={(e) => setCode(e.target.value)} />
+        <Button size="small" variant="outlined" onClick={joinMeeting}>
           Join
         </Button>
       </Stack>
       <Stack>
-        <Stack spacing={2} direction='row'>
+        <Stack spacing={2} direction="row">
           {isAudioEnabled ? (
             <IconButton
               onClick={() => {

@@ -1,5 +1,5 @@
 import { TSocket } from '../types'
-type Next = (err ? : Error) => void
+type Next = (err?: Error) => void
 export function authSocketMid(socket: TSocket, next: Next) {
   console.log('socket middleware')
   console.log(socket.handshake.auth.username)

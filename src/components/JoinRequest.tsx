@@ -14,7 +14,7 @@ type TJoinReq = {
 }
 const JoinRequest = ({}) => {
   const { roomId } = useRoomContext()
-  const [joinReqs, setJoinReqs] = useState < TJoinReq[] > ([])
+  const [joinReqs, setJoinReqs] = useState<TJoinReq[]>([])
   useEffect(() => {
     socket.on('join-req', (data: TJoinReq) => {
       console.log('join-req', data)
@@ -28,7 +28,8 @@ const JoinRequest = ({}) => {
     // handleOffer(req.username)
     console.log('rooomId:', roomId)
     socket.emit(
-      'join-accept', { roomId, caller: req.caller, sockId: req.sockId },
+      'join-accept',
+      { roomId, caller: req.caller, sockId: req.sockId },
       ({ status, msg, data }: TSetMeeting) => {
         console.log('status:', status, msg)
         if (status == 'ERROR') {
@@ -46,16 +47,11 @@ const JoinRequest = ({}) => {
   const Action = ({ req }) => {
     return (
       <>
-        <Button color='secondary' size='small' onClick={() => handleAdmit(req)}>
+        <Button color="secondary" size="small" onClick={() => handleAdmit(req)}>
           ADMIT
         </Button>
-        <IconButton
-          size='small'
-          aria-label='close'
-          color='inherit'
-          onClick={() => handleClose(req)}
-        >
-          <CloseIcon fontSize='small' />
+        <IconButton size="small" aria-label="close" color="inherit" onClick={() => handleClose(req)}>
+          <CloseIcon fontSize="small" />
         </IconButton>
       </>
     )

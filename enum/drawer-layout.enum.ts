@@ -1,5 +1,5 @@
 export enum DrawerLayoutEnum {
   PEOPLE = 'PEOPLE',
-    CHAT = 'CHAT',
-    NONE = 'NONE'
+  CHAT = 'CHAT',
+  NONE = 'NONE'
 }

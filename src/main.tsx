@@ -10,7 +10,7 @@ const darkTheme = createTheme({
     mode: 'dark'
   }
 })
-createRoot(document.getElementById('root') !).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
