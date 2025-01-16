@@ -45,14 +45,11 @@ function App() {
       console.log('participant-new', data)
       await handleOffer(data)
     })
-    socket.on(
-      'candidate',
-      async ({ candidate, sender }: { candidate: RTCIceCandidateInit; sender: string }) => {
-        console.log('ICE candidate received', candidate, sender)
-        const ptc = participants.find((p) => p.username == sender)
-        await pcs.current.get(ptc.username).addIceCandidate(candidate)
-      }
-    )
+    socket.on('candidate', async ({ candidate, sender }: { candidate: RTCIceCandidateInit; sender: string }) => {
+      console.log('ICE candidate received', candidate, sender)
+      const ptc = participants.find((p) => p.username == sender)
+      await pcs.current.get(ptc.username).addIceCandidate(candidate)
+    })
     return () => {
       socket.off('candidate')
       socket.off('participant-new')
