@@ -6,8 +6,8 @@ import { DrawerLayoutEnum } from '../enum/drawer-layout.enum'
 import JoinRequest from './components/JoinRequest'
 import { useRoomContext, useRoomDispatch } from './context/RoomContext'
 
-const Meeting = ({ code, localStream, myUname }) => {
-  const { participants, streams, pcs } = useRoomContext()
+const Meeting = ({ code, myUname, isAudioEnabled, isVideoEnabled, setIsAudioEnabled, setIsVideoEnabled }) => {
+  const { participants, streams, localStream, pcs } = useRoomContext()
   const [drawer, setDrawer] = useState(DrawerLayoutEnum.NONE)
 
   const totalParticipants = participants.length + 1 // +1 for local user
@@ -31,7 +31,7 @@ const Meeting = ({ code, localStream, myUname }) => {
           overflowY: 'auto'
         }}
       >
-        <VideoBox key={myUname} stream={localStream} username={myUname} />
+        <VideoBox key={myUname} stream={localStream} username={`${myUname} (You)`} />
         {participants
           .filter((p) => p.username !== myUname)
           .map((ptc) => (
@@ -40,7 +40,16 @@ const Meeting = ({ code, localStream, myUname }) => {
       </Box>
       <JoinRequest />
       <Drawer drawer={drawer} />
-      <Footer code={code} drawer={drawer} setDrawer={setDrawer} myUname={myUname} />
+      <Footer
+        code={code}
+        drawer={drawer}
+        setDrawer={setDrawer}
+        myUname={myUname}
+        isAudioEnabled={isAudioEnabled}
+        isVideoEnabled={isVideoEnabled}
+        setIsAudioEnabled={setIsAudioEnabled}
+        setIsVideoEnabled={setIsVideoEnabled}
+      />
     </Box>
   )
 }
@@ -50,8 +59,8 @@ const VideoBox = ({ stream, username }) => {
   const [isPortrait, setIsPortrait] = useState(false)
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream
+    if (videoRef.current && stream.current) {
+      videoRef.current.srcObject = stream.current
       videoRef.current.onloadedmetadata = () => {
         const videoWidth = videoRef.current.videoWidth
         const videoHeight = videoRef.current.videoHeight

@@ -6,22 +6,15 @@ import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { socket, updateAuthToken } from './socket.ts'
 import { TSetMeeting } from './types'
-import { useRoomDispatch } from './context/RoomContext'
-const Home = ({
-  setCode,
-  code,
-  myUname,
-  isAudioEnabled,
-  setIsAudioEnabled,
-  isVideoEnabled,
-  setIsVideoEnabled,
-  localStream
-}) => {
+import { useRoomContext, useRoomDispatch } from './context/RoomContext'
+
+const Home = ({ setCode, code, myUname, isAudioEnabled, setIsAudioEnabled, isVideoEnabled, setIsVideoEnabled }) => {
   const dispatch = useRoomDispatch()
+  const { localStream } = useRoomContext()
   const camRef = useRef<HTMLVideoElement | null>(null)
   useEffect(() => {
     if (localStream && camRef.current) {
-      camRef.current!.srcObject = localStream
+      camRef.current!.srcObject = localStream.current
     }
   }, [localStream])
 
@@ -64,6 +57,7 @@ const Home = ({
       console.log('join request sent')
     })
   }
+
   return (
     <Stack spacing={2} direction="row" justifyContent="center" sx={{ height: '100%' }} alignItems="center">
       <Stack spacing={1}>

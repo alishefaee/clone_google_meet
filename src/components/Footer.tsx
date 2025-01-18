@@ -6,14 +6,25 @@ import TagFacesOutlinedIcon from '@mui/icons-material/TagFacesOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined'
 import React, { useEffect } from 'react'
-// import { useRoomContext } from '../context/Room.context.tsx'
-// import { useWebRTC } from '../context/webrtc.context.tsx'
 import MicIcon from '@mui/icons-material/Mic'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
 import { DrawerLayoutEnum } from '../../enum/drawer-layout.enum'
-export default function Footer({ code, setDrawer, drawer, myUname }) {
+import { useRoomContext } from '../context/RoomContext'
+
+export default function Footer({
+  code,
+  setDrawer,
+  drawer,
+  myUname,
+  isAudioEnabled,
+  isVideoEnabled,
+  setIsAudioEnabled,
+  setIsVideoEnabled
+}) {
+  const { localStream } = useRoomContext()
+
   function dialogLayoutHandler(name: DrawerLayoutEnum) {
     if (name === drawer) {
       setDrawer(DrawerLayoutEnum.NONE)
@@ -21,6 +32,25 @@ export default function Footer({ code, setDrawer, drawer, myUname }) {
       setDrawer(name)
     }
   }
+
+  const toggleAudioTrack = () => {
+    // if (stream) {
+    const audioTrack = localStream.current.getAudioTracks()[0]
+    if (audioTrack) {
+      audioTrack.enabled = !audioTrack.enabled
+      setIsAudioEnabled(audioTrack.enabled) // Sync state with track property
+    }
+    // }
+  }
+
+  const toggleVideoTrack = () => {
+    const videoTrack = localStream.current.getVideoTracks()[0]
+    if (videoTrack) {
+      videoTrack.enabled = !videoTrack.enabled
+      setIsVideoEnabled(videoTrack.enabled)
+    }
+  }
+
   return (
     <Stack
       direction="row"
@@ -42,34 +72,26 @@ export default function Footer({ code, setDrawer, drawer, myUname }) {
       <Stack direction="row" sx={{ justifyContent: 'center', flex: 1 }}>
         <IconButton>
           {' '}
-          <TagFacesOutlinedIcon />
-        </IconButton>
-        <IconButton>
-          {' '}
           <PresentToAllOutlinedIcon />
         </IconButton>
-        {/*{audioEnabled ? (*/}
-        {/*  <IconButton onClick={toggleAudioTrack}>*/}
-        {/*    <MicIcon />*/}
-        {/*  </IconButton>*/}
-        {/*) : (*/}
-        {/*  <IconButton onClick={toggleAudioTrack}>*/}
-        {/*    <MicOffIcon />*/}
-        {/*  </IconButton>*/}
-        {/*)}*/}
-        {/*{videoEnabled ? (*/}
-        {/*  <IconButton onClick={toggleVideoTrack}>*/}
-        {/*    <VideocamIcon />*/}
-        {/*  </IconButton>*/}
-        {/*) : (*/}
-        {/*  <IconButton onClick={toggleVideoTrack}>*/}
-        {/*    <VideocamOffIcon />*/}
-        {/*  </IconButton>*/}
-        {/*)}*/}
-        <IconButton>
-          {' '}
-          <BackHandOutlinedIcon />
-        </IconButton>
+        {isAudioEnabled ? (
+          <IconButton onClick={toggleAudioTrack}>
+            <MicIcon />
+          </IconButton>
+        ) : (
+          <IconButton onClick={toggleAudioTrack}>
+            <MicOffIcon />
+          </IconButton>
+        )}
+        {isVideoEnabled ? (
+          <IconButton onClick={toggleVideoTrack}>
+            <VideocamIcon />
+          </IconButton>
+        ) : (
+          <IconButton onClick={toggleVideoTrack}>
+            <VideocamOffIcon />
+          </IconButton>
+        )}
         <IconButton>
           {' '}
           <MoreVertIcon />

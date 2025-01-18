@@ -17,14 +17,13 @@ const configuration = {
 }
 
 function App() {
-  const { creator, roomId, participants, pcs, streams } = useRoomContext()
+  const { creator, roomId, participants, pcs, streams, localStream } = useRoomContext()
   const dispatch = useRoomDispatch()
   const [isAudioEnabled, setIsAudioEnabled] = useState(true)
   const [isVideoEnabled, setIsVideoEnabled] = useState(true)
   const [myUname, setMyUname] = useState('')
   const [code, setCode] = useState('')
   const [isConnected, setIsConnected] = useState(socket.connected)
-  const [localStream, setLocalStream] = useState<MediaStream | null>(null)
   useEffect(() => {
     setupLocalStream()
     socket.on('connect', onConnect)
@@ -56,14 +55,14 @@ function App() {
     }
   }, [roomId, participants])
   useEffect(() => {
-    if (localStream) {
-      const track = localStream.getAudioTracks()[0]
+    if (localStream.current) {
+      const track = localStream.current.getAudioTracks()[0]
       track.enabled = isAudioEnabled
     }
   }, [isAudioEnabled])
   useEffect(() => {
-    if (localStream) {
-      const track = localStream.getVideoTracks()[0]
+    if (localStream.current) {
+      const track = localStream.current.getVideoTracks()[0]
       track.enabled = isVideoEnabled
     }
   }, [isVideoEnabled])
@@ -81,7 +80,7 @@ function App() {
   async function handleOffer(data: TParticipant) {
     const pc = new RTCPeerConnection(configuration)
     pcs.current.set(data.username, pc)
-    localStream.getTracks().forEach((track) => {
+    localStream.current.getTracks().forEach((track) => {
       console.log('caller - add local track:', track)
       pc.addTrack(track, localStream)
     })
@@ -131,7 +130,7 @@ function App() {
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then(function (stream) {
-        setLocalStream(stream)
+        localStream.current = stream
         setIsAudioEnabled(stream.getAudioTracks()[0].enabled)
         console.log('Local stream set')
       })
@@ -182,7 +181,14 @@ function App() {
   return (
     <>
       {creator ? (
-        <Meeting localStream={localStream} code={code} myUname={myUname} />
+        <Meeting
+          code={code}
+          myUname={myUname}
+          isAudioEnabled={isAudioEnabled}
+          setIsAudioEnabled={setIsAudioEnabled}
+          isVideoEnabled={isVideoEnabled}
+          setIsVideoEnabled={setIsVideoEnabled}
+        />
       ) : (
         <Home
           isAudioEnabled={isAudioEnabled}
@@ -192,7 +198,6 @@ function App() {
           setCode={setCode}
           code={code}
           myUname={myUname}
-          localStream={localStream}
         />
       )}
     </>
