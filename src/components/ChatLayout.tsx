@@ -3,7 +3,7 @@ import Typography from '@mui/material/Typography'
 import { Divider, List, ListItem, Stack, TextField } from '@mui/material'
 import Box from '@mui/material/Box'
 import SendIcon from '@mui/icons-material/Send'
-import { socket } from '../socket.ts'
+import { socket } from '../socket'
 import { useRoomContext } from '../context/RoomContext'
 
 const ChatLayout = () => {

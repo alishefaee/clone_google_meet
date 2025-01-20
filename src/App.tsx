@@ -1,6 +1,7 @@
-import './App.css'
+import React from 'react'
 import { useEffect, useState } from 'react'
-import { socket, updateAuthToken } from './socket.ts'
+import './App.css'
+import { socket, updateAuthToken } from './socket'
 import Home from './Home'
 import Meeting from './Meeting'
 import { useRoomContext, useRoomDispatch } from './context/RoomContext'
@@ -47,7 +48,11 @@ function App() {
     socket.on('candidate', async ({ candidate, sender }: { candidate: RTCIceCandidateInit; sender: string }) => {
       console.log('ICE candidate received', candidate, sender)
       const ptc = participants.find((p) => p.username == sender)
-      await pcs.current.get(ptc.username).addIceCandidate(candidate)
+      if (!ptc) {
+        console.error('ptc not found')
+        return
+      }
+      await pcs.current.get(ptc.username)!.addIceCandidate(candidate)
     })
     return () => {
       socket.off('candidate')
@@ -80,9 +85,9 @@ function App() {
   async function handleOffer(data: TParticipant) {
     const pc = new RTCPeerConnection(configuration)
     pcs.current.set(data.username, pc)
-    localStream.current.getTracks().forEach((track) => {
+    localStream.current!.getTracks().forEach((track) => {
       console.log('caller - add local track:', track)
-      pc.addTrack(track, localStream)
+      pc.addTrack(track, localStream.current!)
     })
     pc.ontrack = (ev) => {
       console.log('caller - Remote track received', ev)

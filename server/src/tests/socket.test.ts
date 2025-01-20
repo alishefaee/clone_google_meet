@@ -8,13 +8,14 @@ function waitFor(socket: ServerSocket | ClientSocket, event: string) {
     socket.once(event, resolve)
   })
 }
+
 describe('socket io', () => {
   let io: Server
   let serverSocket: ServerSocket
   let clientSocket: ClientSocket
   const port = 4000
   beforeAll(() => {
-    return new Promise((resolve) => {
+    return new Promise((resolve: any) => {
       const httpServer = createServer()
       io = new Server(httpServer)
       httpServer.listen(port, () => {

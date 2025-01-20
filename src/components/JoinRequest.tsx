@@ -4,13 +4,15 @@ import Button from '@mui/material/Button'
 import Snackbar from '@mui/material/Snackbar'
 import IconButton from '@mui/material/IconButton'
 import CloseIcon from '@mui/icons-material/Close'
-import { socket } from '../socket.ts'
+import { socket } from '../socket'
 import { useRoomContext, useRoomDispatch } from '../context/RoomContext'
 import { TParticipant, TSetMeeting } from '../types'
+
 type TJoinReq = {
   caller: string
   roomId: string
   sockId: string
+  username: string
 }
 const JoinRequest = ({}) => {
   const { roomId } = useRoomContext()

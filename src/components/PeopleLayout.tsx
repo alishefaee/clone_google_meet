@@ -6,6 +6,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import MicIcon from '@mui/icons-material/Mic'
 import { useRoomContext } from '../context/RoomContext'
+
 const PeopleLayout = () => {
   const { participants } = useRoomContext()
   return (
@@ -13,7 +14,7 @@ const PeopleLayout = () => {
       <Typography variant="h6">People</Typography>
       <Divider />
       <List>
-        {participants.map(({ username, vid, aud }) => (
+        {participants.map(({ username, vid, aud }: { username: string; vid: boolean; aud: boolean }) => (
           <ListItem key={username}>
             <Stack direction="row" spacing={1} sx={{ width: '100%' }}>
               <AccountCircleIcon />

@@ -55,15 +55,15 @@ const Meeting = ({ code, myUname, isAudioEnabled, isVideoEnabled, setIsAudioEnab
 }
 
 const VideoBox = ({ stream, username }) => {
-  const videoRef = useRef(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
   const [isPortrait, setIsPortrait] = useState(false)
 
   useEffect(() => {
     if (videoRef.current && stream.current) {
-      videoRef.current.srcObject = stream.current
-      videoRef.current.onloadedmetadata = () => {
-        const videoWidth = videoRef.current.videoWidth
-        const videoHeight = videoRef.current.videoHeight
+      videoRef.current!.srcObject = stream.current
+      videoRef.current!.onloadedmetadata = () => {
+        const videoWidth = videoRef.current!.videoWidth
+        const videoHeight = videoRef.current!.videoHeight
         setIsPortrait(videoHeight > videoWidth)
       }
     }

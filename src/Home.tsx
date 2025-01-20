@@ -4,7 +4,7 @@ import MicIcon from '@mui/icons-material/Mic'
 import MicOffIcon from '@mui/icons-material/MicOff'
 import VideocamIcon from '@mui/icons-material/Videocam'
 import VideocamOffIcon from '@mui/icons-material/VideocamOff'
-import { socket, updateAuthToken } from './socket.ts'
+import { socket, updateAuthToken } from './socket'
 import { TSetMeeting } from './types'
 import { useRoomContext, useRoomDispatch } from './context/RoomContext'
 
@@ -14,7 +14,7 @@ const Home = ({ setCode, code, myUname, isAudioEnabled, setIsAudioEnabled, isVid
   const camRef = useRef<HTMLVideoElement | null>(null)
   useEffect(() => {
     if (localStream && camRef.current) {
-      camRef.current!.srcObject = localStream.current
+      camRef.current!.srcObject = localStream.current!
     }
   }, [localStream])
 
@@ -35,8 +35,8 @@ const Home = ({ setCode, code, myUname, isAudioEnabled, setIsAudioEnabled, isVid
           return
         }
         setCode(id)
-        dispatch({ type: 'SET_PARTICIPANTS', payload: data.participants })
-        dispatch({ type: 'SET_CREATOR', payload: data.creator })
+        dispatch({ type: 'SET_PARTICIPANTS', payload: data!.participants })
+        dispatch({ type: 'SET_CREATOR', payload: data!.creator })
         console.log('Meeting created')
       }
     )

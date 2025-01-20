@@ -5,10 +5,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev src/index.ts",
-    "start": "cross-env NODE_ENV=production node build/src/index.js",
+    "start": "npm run build && npm run build:client && cross-env NODE_ENV=production node build/src/index.js",
     "build": "del build/* && tsc",
     "start:win": "cross-env NODE_ENV=production node build/src/index.js",
     "build:win": "del-cli build/* && tsc",
+    "build:client": "cd .. && npm run build",
     "test": "vitest"
   },
   "keywords": [],

@@ -9,7 +9,7 @@ interface RoomState {
 }
 
 interface RoomContextProps extends RoomState {
-  localStream: React.MutableRefObject<MediaStream>
+  localStream: React.MutableRefObject<MediaStream | undefined>
   streams: React.MutableRefObject<Map<string, MediaStream>>
   pcs: React.MutableRefObject<Map<string, RTCPeerConnection>>
 }
@@ -75,19 +75,27 @@ function roomReducer(state: RoomState, action: Actions): RoomState {
   }
 }
 
-const RoomContext = createContext<RoomContextProps>(null)
-const RoomDispatchContext = createContext<React.Dispatch<Actions>>(null)
+// Create a default context value
+const defaultContextValue: RoomContextProps = {
+  ...initialState,
+  localStream: { current: undefined } as React.MutableRefObject<MediaStream | undefined>,
+  streams: { current: new Map() } as React.MutableRefObject<Map<string, MediaStream>>,
+  pcs: { current: new Map() } as React.MutableRefObject<Map<string, RTCPeerConnection>>
+}
+
+const RoomContext = createContext<RoomContextProps>(defaultContextValue)
+const RoomDispatchContext = createContext<React.Dispatch<Actions>>(() => undefined)
 
 interface RoomProviderProps {
   children: ReactNode
 }
 
 export function RoomProvider({ children }: RoomProviderProps) {
-  const [state, dispatch] = useReducer(roomReducer, initialState, undefined)
-  // Refs for stream and peer connection state
+  const [state, dispatch] = useReducer(roomReducer, initialState)
   const localStream = useRef<MediaStream>()
   const streams = useRef<Map<string, MediaStream>>(new Map())
   const pcs = useRef<Map<string, RTCPeerConnection>>(new Map())
+
   return (
     <RoomContext.Provider value={{ ...state, streams, pcs, localStream }}>
       <RoomDispatchContext.Provider value={dispatch}>{children}</RoomDispatchContext.Provider>
@@ -96,9 +104,17 @@ export function RoomProvider({ children }: RoomProviderProps) {
 }
 
 export const useRoomContext = () => {
-  return useContext(RoomContext)
+  const context = useContext(RoomContext)
+  if (context === undefined) {
+    throw new Error('useRoomContext must be used within a RoomProvider')
+  }
+  return context
 }
 
 export function useRoomDispatch() {
-  return useContext(RoomDispatchContext)
+  const context = useContext(RoomDispatchContext)
+  if (context === undefined) {
+    throw new Error('useRoomDispatch must be used within a RoomProvider')
+  }
+  return context
 }

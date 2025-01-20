@@ -1,8 +1,6 @@
 import { IconButton, Stack, Typography, useTheme } from '@mui/material'
 import MoreVertIcon from '@mui/icons-material/MoreVert'
-import BackHandOutlinedIcon from '@mui/icons-material/BackHandOutlined'
 import PresentToAllOutlinedIcon from '@mui/icons-material/PresentToAllOutlined'
-import TagFacesOutlinedIcon from '@mui/icons-material/TagFacesOutlined'
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined'
 import React, { useEffect } from 'react'
@@ -35,7 +33,7 @@ export default function Footer({
 
   const toggleAudioTrack = () => {
     // if (stream) {
-    const audioTrack = localStream.current.getAudioTracks()[0]
+    const audioTrack = localStream.current!.getAudioTracks()[0]
     if (audioTrack) {
       audioTrack.enabled = !audioTrack.enabled
       setIsAudioEnabled(audioTrack.enabled) // Sync state with track property
@@ -44,7 +42,7 @@ export default function Footer({
   }
 
   const toggleVideoTrack = () => {
-    const videoTrack = localStream.current.getVideoTracks()[0]
+    const videoTrack = localStream.current!.getVideoTracks()[0]
     if (videoTrack) {
       videoTrack.enabled = !videoTrack.enabled
       setIsVideoEnabled(videoTrack.enabled)
