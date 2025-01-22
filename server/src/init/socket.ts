@@ -2,6 +2,7 @@ import { Server } from 'socket.io'
 import http from 'http'
 import { authSocketMid } from '../middlewares/auth.middleware'
 import { onConnection } from '../sockets/on-connection'
+
 export function socketServer(server: http.Server) {
   console.log('socketServer')
   const io = new Server(server, {

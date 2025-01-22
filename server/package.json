@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development ts-node-dev src/index.ts",
     "start": "npm run build:client && npm run build && cross-env NODE_ENV=production node build/src/index.js",
-    "build": "del build/* && tsc && cp -r public build",
+    "build": "del build/* && tsc && cp -r public build && cp -r ssl build",
     "start:win": "cross-env NODE_ENV=production node build/src/index.js",
     "build:win": "del-cli build/* && tsc",
     "build:client": "cd .. && npm run build",

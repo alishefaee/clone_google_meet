@@ -5,9 +5,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.io = exports.server = void 0;
 const http_1 = __importDefault(require("http"));
+const https_1 = __importDefault(require("https"));
+const fs_1 = __importDefault(require("fs"));
 const socket_1 = require("./init/socket");
 const app_1 = require("./init/app");
-const server = http_1.default.createServer(app_1.app);
+const path_1 = __importDefault(require("path"));
+const options = {
+    key: fs_1.default.readFileSync(path_1.default.join(__dirname, '../ssl/key.pem')),
+    cert: fs_1.default.readFileSync(path_1.default.join(__dirname, '../ssl/cert.pem'))
+};
+const server = process.env.NODE_ENV === 'production' ? https_1.default.createServer(options, app_1.app) : http_1.default.createServer(app_1.app);
 exports.server = server;
 const port = 4000;
 console.log('Create IO');
