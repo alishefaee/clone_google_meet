@@ -14225,7 +14225,7 @@ function Us(e, t) {
   )
 }
 Object.assign(Us, { Manager: Rc, Socket: i0, io: Us, connect: Us })
-const Lk = `https://${window.location.hostname}:4000`,
+const Lk = '/',
   ze = Us(Lk, {
     autoConnect: !1,
     secure: !0,
