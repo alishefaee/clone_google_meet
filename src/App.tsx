@@ -26,7 +26,6 @@ function App() {
   const [code, setCode] = useState('')
   const [isConnected, setIsConnected] = useState(socket.connected)
   useEffect(() => {
-    console.log('BASE:', import.meta.env.API_URL)
     setupLocalStream()
     socket.on('connect', onConnect)
     socket.on('disconnect', onDisconnect)

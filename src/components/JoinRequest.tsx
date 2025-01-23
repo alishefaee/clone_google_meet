@@ -12,7 +12,6 @@ type TJoinReq = {
   caller: string
   roomId: string
   sockId: string
-  username: string
 }
 const JoinRequest = ({}) => {
   const { roomId } = useRoomContext()
@@ -44,7 +43,7 @@ const JoinRequest = ({}) => {
   }
   const handleClose = (req: TJoinReq) => {
     // todo: handle rejection
-    setJoinReqs((pre) => pre.filter((r) => r.username != req.username))
+    setJoinReqs((pre) => pre.filter((r) => r.caller != req.caller))
   }
   const Action = ({ req }) => {
     return (
@@ -62,9 +61,9 @@ const JoinRequest = ({}) => {
     <>
       {joinReqs.map((req) => (
         <Snackbar
-          key={req.username}
+          key={req.caller}
           open={!!req}
-          message={req.username}
+          message={req.caller}
           action={<Action req={req} />}
           // ContentProps={{ sx: { backgroundColor: '#4E4E4EFF', color: 'white' } }}
         />

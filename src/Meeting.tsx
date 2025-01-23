@@ -5,8 +5,18 @@ import Drawer from './components/Drawer'
 import { DrawerLayoutEnum } from '../enum/drawer-layout.enum'
 import JoinRequest from './components/JoinRequest'
 import { useRoomContext, useRoomDispatch } from './context/RoomContext'
+import { socket } from './socket.ts'
+
+const configuration = {
+  iceServers: [
+    {
+      urls: 'stun:stun.l.google.com:19302'
+    }
+  ]
+}
 
 const Meeting = ({ code, myUname, isAudioEnabled, isVideoEnabled, setIsAudioEnabled, setIsVideoEnabled }) => {
+  const dispatch = useRoomDispatch()
   const { participants, streams, localStream, pcs } = useRoomContext()
   const [drawer, setDrawer] = useState(DrawerLayoutEnum.NONE)
 
@@ -14,6 +24,85 @@ const Meeting = ({ code, myUname, isAudioEnabled, isVideoEnabled, setIsAudioEnab
   // const totalParticipants = 7 // +1 for local user
   const columns = Math.ceil(Math.sqrt(totalParticipants))
   const rows = Math.ceil(totalParticipants / columns)
+
+  useEffect(() => {
+    socket.on(
+      'offer',
+      async ({ offer, roomId, caller }: { offer: RTCSessionDescriptionInit; roomId: string; caller: string }) => {
+        console.log('Offer received', roomId, caller)
+        const ptc = participants.find((p) => p.username == caller)
+        console.log('pc found:', ptc.username)
+        const pc = new RTCPeerConnection(configuration)
+        pcs.current.set(ptc.username, pc)
+        pc.ontrack = (ev) => {
+          console.log('callee - Remote track received')
+          const s = new MediaStream()
+          s.addTrack(ev.track)
+          streams.current.set(ptc.username, s)
+          dispatch({
+            type: 'EDIT_PARTICIPANT',
+            payload: {
+              aud: !!s.getAudioTracks()[0]?.enabled,
+              vid: !!s.getVideoTracks()[0]?.enabled,
+              username: ptc.username
+            }
+          })
+        }
+        pc.onicecandidate = (ev) => {
+          console.log('callee - on ice candidate')
+          if (ev.candidate) {
+            socket.emit('candidate', { candidate: ev.candidate, roomId })
+          }
+        }
+        pc.oniceconnectionstatechange = () => {
+          console.log('callee - ICE connection state change', pc.iceConnectionState)
+        }
+        pc.onsignalingstatechange = () => {
+          console.log('callee - Signaling state change', pc.signalingState)
+        }
+        localStream.current.getTracks().forEach((track) => {
+          console.log('callee - Adding track:', track)
+          pc.addTrack(track, localStream.current)
+        })
+        if (pc.signalingState !== 'stable') {
+          console.error(`Cannot handle offer. Current signaling state: ${pc.signalingState}`)
+          return
+        }
+        await pc.setRemoteDescription(offer)
+        if (pc.signalingState !== 'have-remote-offer') {
+          console.error(`Failed to create an answer: invalid signaling state ${pc.signalingState}`)
+          return
+        }
+        const answer = await pc.createAnswer()
+        await pc.setLocalDescription(answer)
+        socket.emit('answer', { answer, roomId, caller }, () => {
+          console.log('answer processed')
+        })
+      }
+    )
+    socket.on(
+      'answer',
+      async ({ answer, roomId, callee }: { answer: RTCSessionDescriptionInit; roomId: string; username: string }) => {
+        console.log('answer received:', callee, participants)
+        const ptc = participants.find((pc) => pc.username == callee)
+        const pc = pcs.current.get(ptc.username)
+        console.log('state:', pc.signalingState)
+        if (pc.signalingState !== 'have-local-offer') {
+          console.error(
+            'Failed to set remote description: not in have-local-offer state. Current state:',
+            pc.signalingState
+          )
+          return
+        }
+        const remoteDesc = new RTCSessionDescription(answer)
+        await pc.setRemoteDescription(remoteDesc)
+      }
+    )
+    return () => {
+      socket.off('offer')
+      socket.off('answer')
+    }
+  }, [participants])
 
   return (
     <Box sx={{ overflowY: 'hidden' }}>
@@ -31,7 +120,7 @@ const Meeting = ({ code, myUname, isAudioEnabled, isVideoEnabled, setIsAudioEnab
           overflowY: 'auto'
         }}
       >
-        <VideoBox key={myUname} stream={localStream} username={`${myUname} (You)`} />
+        <VideoBox key={myUname} stream={localStream.current} username={`${myUname} (You)`} />
         {participants
           .filter((p) => p.username !== myUname)
           .map((ptc) => (
@@ -59,8 +148,8 @@ const VideoBox = ({ stream, username }) => {
   const [isPortrait, setIsPortrait] = useState(false)
 
   useEffect(() => {
-    if (videoRef.current && stream.current) {
-      videoRef.current!.srcObject = stream.current
+    if (videoRef.current && stream) {
+      videoRef.current!.srcObject = stream
       videoRef.current!.onloadedmetadata = () => {
         const videoWidth = videoRef.current!.videoWidth
         const videoHeight = videoRef.current!.videoHeight
