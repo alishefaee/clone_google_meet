@@ -69,10 +69,10 @@ const Meeting = ({ code, myUname, isAudioEnabled, isVideoEnabled, setIsAudioEnab
           return
         }
         await pc.setRemoteDescription(offer)
-        if (pc.signalingState !== 'have-remote-offer') {
-          console.error(`Failed to create an answer: invalid signaling state ${pc.signalingState}`)
-          return
-        }
+        // if (pc.signalingState !== 'have-remote-offer') {
+        //   console.error(`Failed to create an answer: invalid signaling state ${pc.signalingState}`)
+        //   return
+        // }
         const answer = await pc.createAnswer()
         await pc.setLocalDescription(answer)
         socket.emit('answer', { answer, roomId, caller }, () => {
@@ -82,7 +82,7 @@ const Meeting = ({ code, myUname, isAudioEnabled, isVideoEnabled, setIsAudioEnab
     )
     socket.on(
       'answer',
-      async ({ answer, roomId, callee }: { answer: RTCSessionDescriptionInit; roomId: string; username: string }) => {
+      async ({ answer, roomId, callee }: { answer: RTCSessionDescriptionInit; roomId: string; callee: string }) => {
         console.log('answer received:', callee, participants)
         const ptc = participants.find((pc) => pc.username == callee)
         const pc = pcs.current.get(ptc.username)
