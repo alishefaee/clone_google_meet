@@ -7,6 +7,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import { socket } from '../socket'
 import { useRoomContext, useRoomDispatch } from '../context/RoomContext'
 import { TParticipant, TSetMeeting } from '../types'
+import { SnackbarContentProps } from '@mui/material'
 
 type TJoinReq = {
   caller: string
@@ -65,7 +66,7 @@ const JoinRequest = ({}) => {
           open={!!req}
           message={req.caller}
           action={<Action req={req} />}
-          ContentProps={{ sx: { backgroundColor: (theme) => theme.palette.grey as string } }}
+          ContentProps={{ sx: { backgroundColor: (theme) => theme.palette.grey } as SnackbarContentProps }}
         />
       ))}
     </>
