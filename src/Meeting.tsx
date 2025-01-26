@@ -98,9 +98,23 @@ const Meeting = ({ code, myUname, isAudioEnabled, isVideoEnabled, setIsAudioEnab
         await pc.setRemoteDescription(remoteDesc)
       }
     )
+
+    socket.on('msg-new', ({ msg, username, date }) => {
+      console.log('new message:', msg)
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          time: date,
+          content: msg,
+          username
+        }
+      })
+    })
+
     return () => {
       socket.off('offer')
       socket.off('answer')
+      socket.off('msg-new')
     }
   }, [participants])
 

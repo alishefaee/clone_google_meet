@@ -48,7 +48,7 @@ const JoinRequest = ({}) => {
   const Action = ({ req }) => {
     return (
       <>
-        <Button color="secondary" size="small" onClick={() => handleAdmit(req)}>
+        <Button color="inherit" size="small" onClick={() => handleAdmit(req)}>
           ADMIT
         </Button>
         <IconButton size="small" aria-label="close" color="inherit" onClick={() => handleClose(req)}>
@@ -65,7 +65,7 @@ const JoinRequest = ({}) => {
           open={!!req}
           message={req.caller}
           action={<Action req={req} />}
-          // ContentProps={{ sx: { backgroundColor: '#4E4E4EFF', color: 'white' } }}
+          ContentProps={{ sx: { backgroundColor: (theme) => theme.palette.grey as string } }}
         />
       ))}
     </>
